@@ -1,0 +1,123 @@
+/* TeamPanel — individual team card within the dashboard grid */
+
+.team-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-height: 0;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Active incident highlight */
+.team-panel--incident-active {
+  border-color: #ff1744;
+  box-shadow: 0 0 8px rgba(255, 23, 68, 0.35);
+}
+
+/* Header */
+.team-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.team-panel__name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-panel__incident-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background-color: #ff1744;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Body */
+.team-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* On-call info */
+.team-panel__oncall {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-panel__oncall-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team-panel__oncall-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.team-panel__shift {
+  margin-top: 4px;
+}
+
+.team-panel__shift-time {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Alert badges */
+.team-panel__alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.team-panel__alert--warning {
+  background-color: rgba(255, 23, 68, 0.12);
+  border: 1px solid #ff1744;
+  color: #ff6b6b;
+}
+
+.team-panel__alert--config {
+  background-color: rgba(255, 171, 0, 0.12);
+  border: 1px solid #ffab00;
+  color: #ffd54f;
+}
+
+.team-panel__alert-icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.team-panel__alert-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

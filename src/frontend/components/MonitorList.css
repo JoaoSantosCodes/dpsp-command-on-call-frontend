@@ -1,0 +1,100 @@
+/* MonitorList — list of monitors with state-based color highlighting */
+
+.monitor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monitor-list__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.monitor-list__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background-color: rgba(15, 52, 96, 0.4);
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.monitor-list__item--alert {
+  border-color: rgba(255, 23, 68, 0.4);
+  background-color: rgba(255, 23, 68, 0.08);
+}
+
+.monitor-list__item--warn {
+  border-color: rgba(255, 171, 0, 0.4);
+  background-color: rgba(255, 171, 0, 0.08);
+}
+
+.monitor-list__item--ok {
+  border-color: rgba(0, 200, 83, 0.2);
+}
+
+.monitor-list__item--no-data,
+.monitor-list__item--unknown {
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+/* State indicator dot */
+.monitor-list__indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.monitor-list__indicator--alert {
+  box-shadow: 0 0 6px rgba(255, 23, 68, 0.6);
+}
+
+.monitor-list__indicator--warn {
+  box-shadow: 0 0 6px rgba(255, 171, 0, 0.6);
+}
+
+.monitor-list__indicator--ok {
+  box-shadow: 0 0 4px rgba(0, 200, 83, 0.4);
+}
+
+/* Monitor name */
+.monitor-list__name {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty state */
+.monitor-list__empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Unmapped monitors section */
+.monitor-list__unmapped {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #0f3460;
+}
+
+.monitor-list__unmapped-title {
+  margin: 0 0 6px 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ff6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

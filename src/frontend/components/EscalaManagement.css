@@ -1,0 +1,233 @@
+.escala-management {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #e0e0e0;
+}
+
+.escala-management__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 24px;
+}
+
+.escala-management__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.escala-management__btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.escala-management__btn--primary {
+  background-color: #4a90d9;
+  color: #ffffff;
+}
+
+.escala-management__btn--primary:hover {
+  background-color: #357abd;
+}
+
+.escala-management__btn--primary:disabled {
+  background-color: #2a4a6e;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.escala-management__btn--edit {
+  background-color: #f0a500;
+  color: #1a1a2e;
+  margin-right: 6px;
+}
+
+.escala-management__btn--edit:hover {
+  background-color: #d4940a;
+}
+
+.escala-management__btn--delete {
+  background-color: #ff1744;
+  color: #ffffff;
+}
+
+.escala-management__btn--delete:hover {
+  background-color: #d50032;
+}
+
+.escala-management__btn--cancel {
+  background-color: #374151;
+  color: #e0e0e0;
+}
+
+.escala-management__btn--cancel:hover {
+  background-color: #4b5563;
+}
+
+/* Table styles */
+.escala-management__table-container {
+  overflow-x: auto;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  background-color: #16213e;
+}
+
+.escala-management__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.escala-management__table th,
+.escala-management__table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #0f3460;
+}
+
+.escala-management__table th {
+  background-color: #1a1a2e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b0b0b0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.escala-management__table td {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.escala-management__table tr:last-child td {
+  border-bottom: none;
+}
+
+.escala-management__table tr:hover td {
+  background-color: rgba(74, 144, 217, 0.05);
+}
+
+.escala-management__empty {
+  text-align: center;
+  padding: 32px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Form styles */
+.escala-management__form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.escala-management__form-card {
+  background-color: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.escala-management__form-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 24px;
+}
+
+.escala-management__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.escala-management__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.escala-management__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #b0b0b0;
+}
+
+.escala-management__input,
+.escala-management__select {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.escala-management__input:focus,
+.escala-management__select:focus {
+  border-color: #4a90d9;
+}
+
+.escala-management__form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.escala-management__form-actions .escala-management__btn {
+  flex: 1;
+}
+
+/* Feedback messages */
+.escala-management__error {
+  background-color: rgba(255, 23, 68, 0.15);
+  border: 1px solid #ff1744;
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: #ff1744;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.escala-management__success {
+  background-color: rgba(76, 175, 80, 0.15);
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: #4caf50;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* Access denied */
+.escala-management__denied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  color: #ff1744;
+  font-size: 1rem;
+}

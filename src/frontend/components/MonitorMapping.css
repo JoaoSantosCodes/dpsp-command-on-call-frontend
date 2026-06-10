@@ -1,0 +1,196 @@
+/* MonitorMapping — interface for associating monitors to teams */
+
+.monitor-mapping {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.monitor-mapping__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Loading */
+.monitor-mapping__loading {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Error alert */
+.monitor-mapping__error {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(255, 23, 68, 0.12);
+  border: 1px solid #ff1744;
+  color: #ff6b6b;
+  font-size: 0.8rem;
+}
+
+/* Sections */
+.monitor-mapping__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.monitor-mapping__section-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #0f3460;
+}
+
+.monitor-mapping__section-title--unmapped {
+  color: #ff6b6b;
+}
+
+/* Empty state */
+.monitor-mapping__empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Monitor list */
+.monitor-mapping__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.monitor-mapping__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background-color: rgba(15, 52, 96, 0.4);
+  border: 1px solid rgba(15, 52, 96, 0.6);
+}
+
+.monitor-mapping__item--mapped {
+  border-color: rgba(0, 200, 83, 0.2);
+}
+
+/* Monitor name */
+.monitor-mapping__monitor-name {
+  flex: 1;
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Select dropdown */
+.monitor-mapping__select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #0f3460;
+  background-color: #1a1a2e;
+  color: #e0e0e0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color 0.2s ease;
+}
+
+.monitor-mapping__select:hover {
+  border-color: #533483;
+}
+
+.monitor-mapping__select:focus {
+  outline: none;
+  border-color: #533483;
+  box-shadow: 0 0 0 2px rgba(83, 52, 131, 0.3);
+}
+
+.monitor-mapping__select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Remove button */
+.monitor-mapping__remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(255, 23, 68, 0.4);
+  border-radius: 4px;
+  background-color: rgba(255, 23, 68, 0.08);
+  color: #ff6b6b;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.monitor-mapping__remove-btn:hover {
+  background-color: rgba(255, 23, 68, 0.2);
+  border-color: #ff1744;
+}
+
+.monitor-mapping__remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.monitor-mapping__spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(83, 52, 131, 0.3);
+  border-top-color: #533483;
+  border-radius: 50%;
+  animation: monitor-mapping-spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes monitor-mapping-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Team groups in mapped section */
+.monitor-mapping__teams {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monitor-mapping__team-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.monitor-mapping__team-name {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #9ca3af;
+}

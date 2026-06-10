@@ -1,0 +1,216 @@
+/* EscalationView — displays active escalations with real-time counters */
+
+.escalation-view {
+  display: flex;
+  flex-direction: column;
+  background-color: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 12px;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Header */
+.escalation-view__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.escalation-view__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.escalation-view__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background-color: #ff1744;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* Body */
+.escalation-view__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Empty state */
+.escalation-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  color: #6b7280;
+}
+
+.escalation-view__empty-icon {
+  font-size: 1.5rem;
+  color: #00c853;
+}
+
+.escalation-view__empty-text {
+  font-size: 0.85rem;
+}
+
+/* Escalation Card */
+.escalation-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #1a1a2e;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.escalation-card--exhausted {
+  border-color: #ff1744;
+  box-shadow: 0 0 10px rgba(255, 23, 68, 0.4);
+  animation: exhausted-pulse 2s ease-in-out infinite;
+}
+
+@keyframes exhausted-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 23, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 23, 68, 0.7);
+  }
+}
+
+/* Critical alert for exhausted escalation */
+.escalation-card__critical-alert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background-color: rgba(255, 23, 68, 0.15);
+  border: 1px solid #ff1744;
+  border-radius: 4px;
+}
+
+.escalation-card__critical-icon {
+  font-size: 0.9rem;
+}
+
+.escalation-card__critical-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ff6b6b;
+}
+
+/* Info section */
+.escalation-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.escalation-card__monitor-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.escalation-card__oncall {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* Metrics (elapsed time + escalation level) */
+.escalation-card__metrics {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.escalation-card__elapsed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.escalation-card__elapsed-label {
+  font-size: 0.65rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.escalation-card__elapsed-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffab00;
+  font-variant-numeric: tabular-nums;
+}
+
+.escalation-card__level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.escalation-card__level-label {
+  font-size: 0.65rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.escalation-card__level-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #0f3460;
+  color: #e0e0e0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Acknowledge button */
+.escalation-card__acknowledge-btn {
+  padding: 8px 12px;
+  background-color: #00c853;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.escalation-card__acknowledge-btn:hover {
+  background-color: #00e676;
+}
+
+.escalation-card__acknowledge-btn:active {
+  transform: scale(0.97);
+}
+
+.escalation-card__acknowledge-btn:focus-visible {
+  outline: 2px solid #00c853;
+  outline-offset: 2px;
+}
