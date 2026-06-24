@@ -6,4 +6,4 @@ variables:
 include:
   - project: grupo-dpsp/devops/platform-engineering/ci-templates
     ref: main
-    file: pipelines/frontend-node.yml
+    file: pipelines/frontend-docker.yml
