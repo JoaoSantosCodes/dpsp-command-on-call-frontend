@@ -1,196 +1,92 @@
-/* MonitorMapping — interface for associating monitors to teams */
+.mapa { display: flex; flex-direction: column; height: 100%; background: #0a0e1a; }
 
-.monitor-mapping {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  background-color: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
-  max-height: 100%;
-  overflow-y: auto;
-}
+.mapa__header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.5rem; }
+.mapa__header-title { font-size: 1.1rem; font-weight: 700; color: #e4e4e7; }
+.mapa__header-clock { color: #a1a1aa; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
+.mapa__header-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #22c55e; }
+.mapa__header-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
 
-.monitor-mapping__title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-}
+.mapa__search { padding: 0 1.5rem 0.75rem; }
+.mapa__search-input { background: #0d1b2a; border: 1px solid rgba(255,255,255,0.1); color: #e4e4e7; padding: 0.45rem 0.75rem; border-radius: 6px; font-size: 0.8rem; width: 250px; }
+.mapa__search-input:focus { outline: none; border-color: #1e90ff; }
 
-/* Loading */
-.monitor-mapping__loading {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #9ca3af;
-  font-style: italic;
-}
-
-/* Error alert */
-.monitor-mapping__error {
-  padding: 8px 12px;
-  border-radius: 4px;
-  background-color: rgba(255, 23, 68, 0.12);
-  border: 1px solid #ff1744;
-  color: #ff6b6b;
-  font-size: 0.8rem;
-}
-
-/* Sections */
-.monitor-mapping__section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.monitor-mapping__section-title {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #e0e0e0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #0f3460;
-}
-
-.monitor-mapping__section-title--unmapped {
-  color: #ff6b6b;
-}
-
-/* Empty state */
-.monitor-mapping__empty {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #6b7280;
-  font-style: italic;
-  padding: 4px 0;
-}
-
-/* Monitor list */
-.monitor-mapping__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.monitor-mapping__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 4px;
-  background-color: rgba(15, 52, 96, 0.4);
-  border: 1px solid rgba(15, 52, 96, 0.6);
-}
-
-.monitor-mapping__item--mapped {
-  border-color: rgba(0, 200, 83, 0.2);
-}
-
-/* Monitor name */
-.monitor-mapping__monitor-name {
+.mapa__container {
   flex: 1;
-  font-size: 0.8rem;
-  color: #e0e0e0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0 1rem;
+  border: 2px solid #1e90ff;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(15, 25, 50, 0.6);
 }
 
-/* Select dropdown */
-.monitor-mapping__select {
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #0f3460;
-  background-color: #1a1a2e;
-  color: #e0e0e0;
-  font-size: 0.75rem;
-  cursor: pointer;
-  min-width: 140px;
-  transition: border-color 0.2s ease;
+.mapa__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
 }
 
-.monitor-mapping__select:hover {
-  border-color: #533483;
-}
+@media (max-width: 1200px) { .mapa__grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .mapa__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .mapa__grid { grid-template-columns: 1fr; } }
 
-.monitor-mapping__select:focus {
-  outline: none;
-  border-color: #533483;
-  box-shadow: 0 0 0 2px rgba(83, 52, 131, 0.3);
-}
-
-.monitor-mapping__select:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Remove button */
-.monitor-mapping__remove-btn {
-  display: inline-flex;
-  align-items: center;
+.mapa__card {
+  background: #0d1b2a;
+  border: 1px solid rgba(30, 144, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid rgba(255, 23, 68, 0.4);
-  border-radius: 4px;
-  background-color: rgba(255, 23, 68, 0.08);
-  color: #ff6b6b;
-  font-size: 0.7rem;
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.2s;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  gap: 0.4rem;
+  min-height: 100px;
+}
+
+.mapa__card:hover {
+  border-color: #1e90ff;
+  background: rgba(30, 144, 255, 0.08);
+  transform: scale(1.02);
+}
+
+.mapa__card--alert {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.mapa__card-area { font-size: 0.7rem; font-weight: 700; color: #e4e4e7; text-transform: uppercase; line-height: 1.2; }
+.mapa__card-plantonista { font-size: 0.65rem; color: #a1a1aa; }
+.mapa__card-problema { font-size: 0.6rem; color: #818cf8; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* Bottom bar with areas */
+.mapa__bottom-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
   flex-shrink: 0;
 }
 
-.monitor-mapping__remove-btn:hover {
-  background-color: rgba(255, 23, 68, 0.2);
-  border-color: #ff1744;
-}
-
-.monitor-mapping__remove-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Spinner */
-.monitor-mapping__spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(83, 52, 131, 0.3);
-  border-top-color: #533483;
-  border-radius: 50%;
-  animation: monitor-mapping-spin 0.6s linear infinite;
+.mapa__area-chip {
   flex-shrink: 0;
+  background: rgba(30, 144, 255, 0.1);
+  border: 1px solid rgba(30, 144, 255, 0.4);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.65rem;
+  color: #90cdf4;
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-@keyframes monitor-mapping-spin {
-  to {
-    transform: rotate(360deg);
-  }
+.mapa__area-chip:hover {
+  background: rgba(30, 144, 255, 0.2);
+  border-color: #1e90ff;
 }
 
-/* Team groups in mapped section */
-.monitor-mapping__teams {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.monitor-mapping__team-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.monitor-mapping__team-name {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #9ca3af;
-}
+.mapa__empty { display: flex; align-items: center; justify-content: center; height: 100%; color: #6b7280; font-size: 0.9rem; }

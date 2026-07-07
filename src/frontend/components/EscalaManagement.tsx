@@ -30,8 +30,13 @@ export function EscalaManagement(): React.ReactElement {
   const [showForm, setShowForm] = useState(false);
   const [editingEscala, setEditingEscala] = useState<Escala | null>(null);
   const [formAreaCodigo, setFormAreaCodigo] = useState('');
-  const [formPeriodoCodigo, setFormPeriodoCodigo] = useState('');
   const [formUsuarioCodigo, setFormUsuarioCodigo] = useState('');
+  const [formMes, setFormMes] = useState(() => String(new Date().getMonth() + 1));
+  const [formAno, setFormAno] = useState(() => String(new Date().getFullYear()));
+  const [formDia, setFormDia] = useState('');
+  const [formHorario, setFormHorario] = useState('');
+  const [formEntradas, setFormEntradas] = useState<Array<{horario: string; data: string}>>([]);
+  const [formPeriodoCodigo, setFormPeriodoCodigo] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
   // Check access: Adm or Responsavel
@@ -184,23 +189,19 @@ export function EscalaManagement(): React.ReactElement {
   // Open form for new escala
   const handleNew = useCallback(() => {
     setEditingEscala(null);
-    setFormAreaCodigo('');
-    setFormPeriodoCodigo('');
-    setFormUsuarioCodigo('');
-    setShowForm(true);
-    setError(null);
-    setSuccess(null);
+    setFormAreaCodigo(''); setFormUsuarioCodigo(''); setFormDia(''); setFormPeriodoCodigo('');
+    setFormHorario(''); setFormEntradas([]);
+    setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
+    setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
   // Open form for editing
   const handleEdit = useCallback((escala: Escala) => {
     setEditingEscala(escala);
-    setFormAreaCodigo(escala.areaCodigo);
-    setFormPeriodoCodigo(escala.periodoCodigo);
-    setFormUsuarioCodigo(escala.usuarioCodigo);
-    setShowForm(true);
-    setError(null);
-    setSuccess(null);
+    setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
+    setFormPeriodoCodigo(escala.periodoCodigo); setFormDia('');
+    setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
+    setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
   // Close form
@@ -216,66 +217,53 @@ export function EscalaManagement(): React.ReactElement {
       setError(null);
       setSuccess(null);
 
-      if (!formAreaCodigo) {
-        setError('Área é obrigatória.');
-        return;
-      }
-      if (!formPeriodoCodigo) {
-        setError('Período é obrigatório.');
-        return;
-      }
-      if (!formUsuarioCodigo) {
-        setError('Plantonista é obrigatório.');
-        return;
-      }
+      if (!formAreaCodigo) { setError('Área é obrigatória.'); return; }
+      if (!formUsuarioCodigo) { setError('Plantonista é obrigatório.'); return; }
+      if (formEntradas.length === 0) { setError('Adicione pelo menos uma data.'); return; }
 
       setFormLoading(true);
 
       try {
-        const codigo = editingEscala
-          ? editingEscala.codigo
-          : `ESC-${Date.now()}`;
-
-        const body = {
-          codigo,
-          areaCodigo: formAreaCodigo,
-          periodoCodigo: formPeriodoCodigo,
-          usuarioCodigo: formUsuarioCodigo,
-        };
-
-        let response: Response;
-
-        if (editingEscala) {
-          response = await fetch(`/api/escalas/${editingEscala.id}`, {
-            method: 'PUT',
-            headers: authHeaders,
-            body: JSON.stringify(body),
-          });
-        } else {
-          response = await fetch('/api/escalas', {
+        // Create one escala per entry (date+horario)
+        for (const entrada of formEntradas) {
+          // Create periodo for this date
+          const periodoRes = await fetch('/api/periodos', {
             method: 'POST',
             headers: authHeaders,
-            body: JSON.stringify(body),
+            body: JSON.stringify({ data: entrada.data, horarios: entrada.horario, areaCodigo: formAreaCodigo }),
+          });
+
+          let periodoCodigo = '';
+          if (periodoRes.ok) {
+            const periodoData = await periodoRes.json();
+            periodoCodigo = periodoData.codigo;
+          } else {
+            // Try to find existing
+            const existingRes = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(formAreaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
+            if (existingRes.ok) {
+              const existingData = await existingRes.json();
+              const perList = existingData.periodos || existingData || [];
+              const match = perList.find((p: any) => p.data === entrada.data);
+              if (match) periodoCodigo = match.codigo;
+            }
+          }
+
+          if (!periodoCodigo) continue;
+
+          const codigo = `ESC-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+          await fetch('/api/escalas', {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
           });
         }
 
-        if (!response.ok) {
-          const data = await response.json();
-          setError(data.error || 'Erro ao salvar escala.');
-          return;
-        }
-
-        setSuccess(editingEscala ? 'Escala atualizada com sucesso!' : 'Escala criada com sucesso!');
-        setShowForm(false);
-        setEditingEscala(null);
-        await fetchEscalas();
-      } catch {
-        setError('Erro ao conectar com o servidor.');
-      } finally {
-        setFormLoading(false);
-      }
+        setSuccess('Escala criada!');
+        setShowForm(false); setEditingEscala(null); await fetchEscalas();
+      } catch { setError('Erro ao conectar.'); }
+      finally { setFormLoading(false); }
     },
-    [formAreaCodigo, formPeriodoCodigo, formUsuarioCodigo, editingEscala, authHeaders, fetchEscalas]
+    [formAreaCodigo, formUsuarioCodigo, formDia, formPeriodoCodigo, editingEscala, authHeaders, fetchEscalas, token]
   );
 
   // Delete escala
@@ -390,90 +378,89 @@ export function EscalaManagement(): React.ReactElement {
               {editingEscala ? 'Editar Escala' : 'Nova Escala'}
             </h2>
             <form className="escala-management__form" onSubmit={handleSave}>
+
               <div className="escala-management__field">
-                <label className="escala-management__label" htmlFor="escala-area">
-                  Área *
-                </label>
-                <select
-                  id="escala-area"
-                  className="escala-management__select"
-                  value={formAreaCodigo}
-                  onChange={(e) => {
-                    setFormAreaCodigo(e.target.value);
-                    setFormPeriodoCodigo('');
-                  }}
-                  required
-                >
+                <label className="escala-management__label">Area</label>
+                <select className="escala-management__select" value={formAreaCodigo} onChange={(e) => { setFormAreaCodigo(e.target.value); setFormUsuarioCodigo(''); setFormPeriodoCodigo(''); setFormEntradas([]); }} required>
                   <option value="">Selecione uma área</option>
-                  {areas.map((area) => (
-                    <option key={area.id} value={area.codigo}>
-                      {area.nome}
-                    </option>
-                  ))}
+                  {areas.map((area) => (<option key={area.id} value={area.codigo}>{area.nome}</option>))}
                 </select>
               </div>
 
               <div className="escala-management__field">
-                <label className="escala-management__label" htmlFor="escala-periodo">
-                  Período *
-                </label>
-                <select
-                  id="escala-periodo"
-                  className="escala-management__select"
-                  value={formPeriodoCodigo}
-                  onChange={(e) => setFormPeriodoCodigo(e.target.value)}
-                  required
-                  disabled={!formAreaCodigo}
-                >
-                  <option value="">Selecione um período</option>
-                  {periodos.map((periodo) => (
-                    <option key={periodo.id} value={periodo.codigo}>
-                      {periodo.data} ({periodo.horarios})
-                    </option>
-                  ))}
+                <label className="escala-management__label">Plantonista</label>
+                <select className="escala-management__select" value={formUsuarioCodigo} onChange={(e) => setFormUsuarioCodigo(e.target.value)} required disabled={!formAreaCodigo}>
+                  <option value="">Selecione o plantonista</option>
+                  {filteredPlantonistas.map((p) => (<option key={p.id} value={p.codigo}>{p.nome}</option>))}
                 </select>
               </div>
 
-              <div className="escala-management__field">
-                <label className="escala-management__label" htmlFor="escala-plantonista">
-                  Plantonista *
-                </label>
-                <select
-                  id="escala-plantonista"
-                  className="escala-management__select"
-                  value={formUsuarioCodigo}
-                  onChange={(e) => setFormUsuarioCodigo(e.target.value)}
-                  required
-                  disabled={!formAreaCodigo}
-                >
-                  <option value="">Selecione um plantonista</option>
-                  {filteredPlantonistas.map((plantonista) => (
-                    <option key={plantonista.id} value={plantonista.codigo}>
-                      {plantonista.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {error && (
-                <div className="escala-management__error" role="alert">
-                  {error}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="escala-management__field">
+                  <label className="escala-management__label">Mês</label>
+                  <select className="escala-management__select" value={formMes} onChange={(e) => setFormMes(e.target.value)}>
+                    <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+                    <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+                    <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+                    <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                  </select>
                 </div>
-              )}
+                <div className="escala-management__field">
+                  <label className="escala-management__label">Ano</label>
+                  <select className="escala-management__select" value={formAno} onChange={(e) => setFormAno(e.target.value)}>
+                    <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Grid: Horário + Data (adicionar múltiplos) */}
+              <div className="escala-management__field">
+                <label className="escala-management__label">Horários e Datas</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                  <select className="escala-management__select" value={formHorario} onChange={(e) => setFormHorario(e.target.value)} style={{ flex: '1 1 auto', minWidth: '150px' }}>
+                    <option value="">Selecione o horário</option>
+                    {periodos.length > 0
+                      ? [...new Set(periodos.map(p => p.horarios))].map((h, i) => (<option key={i} value={h}>{h}</option>))
+                      : <option value="24hs">24hs</option>
+                    }
+                  </select>
+                  <select className="escala-management__select" value={formDia} onChange={(e) => setFormDia(e.target.value)} style={{ flex: '1 1 auto', minWidth: '120px' }}>
+                    <option value="">Dia</option>
+                    {Array.from({ length: new Date(Number(formAno), Number(formMes), 0).getDate() }, (_, i) => {
+                      const day = i + 1;
+                      const dateStr = `${formAno}-${formMes.padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                      const weekday = new Date(Number(formAno), Number(formMes) - 1, day).toLocaleDateString('pt-BR', { weekday: 'short' });
+                      return (<option key={day} value={dateStr}>{String(day).padStart(2, '0')} - {weekday}</option>);
+                    })}
+                  </select>
+                  <button type="button" className="escala-management__btn escala-management__btn--primary" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    onClick={() => {
+                      if (formDia && formHorario && !formEntradas.find(x => x.data === formDia)) {
+                        setFormEntradas([...formEntradas, { horario: formHorario, data: formDia }].sort((a, b) => a.data.localeCompare(b.data)));
+                        setFormDia('');
+                      }
+                    }}>+ Adicionar</button>
+                </div>
+
+                {formEntradas.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                    {formEntradas.map((item) => (
+                      <div key={item.data} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 500 }}>🕐 {item.horario}</span>
+                        <span style={{ fontSize: '0.85rem', color: '#e4e4e7', margin: '0 0.5rem' }}>|</span>
+                        <span style={{ fontSize: '0.85rem', color: '#e4e4e7' }}>📅 {item.data}</span>
+                        <button type="button" onClick={() => setFormEntradas(formEntradas.filter(x => x.data !== item.data))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: 0, marginLeft: '0.5rem' }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {error && (<div className="escala-management__error" role="alert">{error}</div>)}
 
               <div className="escala-management__form-actions">
-                <button
-                  type="button"
-                  className="escala-management__btn escala-management__btn--cancel"
-                  onClick={handleCancel}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="escala-management__btn escala-management__btn--primary"
-                  disabled={formLoading || !formAreaCodigo || !formPeriodoCodigo || !formUsuarioCodigo}
-                >
+                <button type="button" className="escala-management__btn escala-management__btn--cancel" onClick={handleCancel}>Cancelar</button>
+                <button type="submit" className="escala-management__btn escala-management__btn--primary" disabled={formLoading || !formAreaCodigo || !formUsuarioCodigo || formEntradas.length === 0}>
                   {formLoading ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>

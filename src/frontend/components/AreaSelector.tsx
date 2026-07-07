@@ -94,9 +94,9 @@ export function AreaSelector(): React.ReactElement {
         return;
       }
 
-      // Store selected areas in Zustand and navigate to setup wizard
+      // Store selected areas in Zustand and navigate to mapa
       setSelectedAreas(selected);
-      setCurrentView('setup-wizard');
+      setCurrentView('monitor-mapping');
     } catch {
       setError('Erro ao conectar com o servidor.');
     } finally {

@@ -163,6 +163,10 @@ export interface Area {
   codigo: string;
   nome: string;
   torre: string | null;
+  coordenadorNome: string | null;
+  coordenadorContato: string | null;
+  gerenteNome: string | null;
+  gerenteContato: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -229,7 +233,9 @@ export type AppView =
   | 'team-management'
   | 'plantonist-management'
   | 'periodo-management'
-  | 'escala-management';
+  | 'escala-management'
+  | 'horario-management'
+  | 'problema-management';
 
 // === Zustand Store Types ===
 

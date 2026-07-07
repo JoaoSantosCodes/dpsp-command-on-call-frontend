@@ -191,9 +191,9 @@ export function RegisterUser(): React.ReactElement {
               required
             >
               <option value="">Selecione um perfil</option>
-              <option value="Adm">Adm</option>
               <option value="Responsavel">Responsável</option>
               <option value="Plantonista">Plantonista</option>
+              <option value="Consultor">Consultor</option>
             </select>
           </div>
 

@@ -25,7 +25,7 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
   token: storedToken,
   user: storedUser,
   isAuthenticated: !!storedToken && !!storedUser,
-  currentView: (storedToken && storedUser) ? 'dashboard' : 'login',
+  currentView: (storedToken && storedUser) ? 'monitor-mapping' : 'login',
 
   // Area selection state
   selectedAreas: [],

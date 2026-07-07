@@ -10,6 +10,8 @@ import { AreaManagement } from './components/AreaManagement';
 import { PlantonistManagement } from './components/PlantonistManagement';
 import { PeriodoManagement } from './components/PeriodoManagement';
 import { EscalaManagement } from './components/EscalaManagement';
+import { HorarioManagement } from './components/HorarioManagement';
+import { ProblemaManagement } from './components/ProblemaManagement';
 import { TeamManagement } from './components/TeamManagement';
 import { Login } from './components/Login';
 import { RegisterUser } from './components/RegisterUser';
@@ -22,7 +24,7 @@ import type { AppView } from '../shared/types';
 /**
  * Main navigation views accessible once authenticated.
  */
-type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'team-management';
+type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management';
 
 interface NavItem {
   id: AuthenticatedView;
@@ -31,21 +33,17 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { id: 'csv-import', label: 'Importar Escala', icon: '📄' },
-  { id: 'incident-history', label: 'Histórico', icon: '📋' },
-  { id: 'monitor-mapping', label: 'Mapeamento', icon: '🔗' },
-  { id: 'escalation-config', label: 'Escalação', icon: '⚡' },
+  { id: 'monitor-mapping', label: 'Mapa', icon: '' },
+  { id: 'csv-import', label: 'Importar', icon: '' },
+  { id: 'area-management', label: 'Áreas', icon: '' },
+  { id: 'plantonist-management', label: 'Plantonistas', icon: '' },
+  { id: 'escala-management', label: 'Escalas', icon: '' },
+  { id: 'horario-management', label: 'Horários', icon: '' },
+  { id: 'problema-management', label: 'Problemas', icon: '' },
 ];
 
 /** Admin-only nav items */
-const ADMIN_NAV_ITEMS: NavItem[] = [
-  { id: 'team-management', label: 'Times', icon: '👥' },
-  { id: 'area-management', label: 'Áreas', icon: '🏢' },
-  { id: 'plantonist-management', label: 'Plantonistas', icon: '👤' },
-  { id: 'periodo-management', label: 'Períodos', icon: '📅' },
-  { id: 'escala-management', label: 'Escalas', icon: '📋' },
-];
+const ADMIN_NAV_ITEMS: NavItem[] = [];
 
 /**
  * App — Root component of the Command Center Datadog frontend.
@@ -124,9 +122,6 @@ function AuthenticatedApp({
     if (userPerfil === 'Adm') return [...NAV_ITEMS, ...ADMIN_NAV_ITEMS];
     if (userPerfil === 'Responsavel') return [
       ...NAV_ITEMS,
-      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '👤' },
-      { id: 'periodo-management' as AuthenticatedView, label: 'Períodos', icon: '📅' },
-      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '📋' },
     ];
     return NAV_ITEMS;
   })();
@@ -150,11 +145,13 @@ function AuthenticatedApp({
   return (
     <div className="app">
       <nav className="app__nav" role="navigation" aria-label="Navegação principal">
-        <div className="app__nav-brand">
-          <h1 className="app__nav-title">Command Center</h1>
+        <div className="app__nav-left">
+          <button className="app__nav-profile" onClick={logout} title="Clique para sair">
+            Perfil do Usuário
+          </button>
           <ConnectionIndicator status={connectionStatus} />
           <button className="app__theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? '🌙' : '☀️'}
           </button>
         </div>
         <ul className="app__nav-tabs" role="tablist">
@@ -167,7 +164,6 @@ function AuthenticatedApp({
                 aria-controls={`panel-${item.id}`}
                 onClick={() => handleNavClick(item.id)}
               >
-                <span className="app__nav-tab-icon">{item.icon}</span>
                 <span className="app__nav-tab-label">{item.label}</span>
               </button>
             </li>
@@ -273,6 +269,28 @@ function AuthenticatedApp({
             aria-hidden={currentView !== 'escala-management'}
           >
             {currentView === 'escala-management' && <EscalaManagement />}
+          </div>
+        )}
+
+        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
+          <div
+            id="panel-horario-management"
+            role="tabpanel"
+            className={`app__panel ${currentView === 'horario-management' ? 'app__panel--active' : ''}`}
+            aria-hidden={currentView !== 'horario-management'}
+          >
+            {currentView === 'horario-management' && <HorarioManagement />}
+          </div>
+        )}
+
+        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
+          <div
+            id="panel-problema-management"
+            role="tabpanel"
+            className={`app__panel ${currentView === 'problema-management' ? 'app__panel--active' : ''}`}
+            aria-hidden={currentView !== 'problema-management'}
+          >
+            {currentView === 'problema-management' && <ProblemaManagement />}
           </div>
         )}
       </main>

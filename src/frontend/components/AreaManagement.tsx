@@ -26,6 +26,10 @@ export function AreaManagement(): React.ReactElement {
   const [formCodigo, setFormCodigo] = useState('');
   const [formNome, setFormNome] = useState('');
   const [formTorre, setFormTorre] = useState('');
+  const [formCoordenadorNome, setFormCoordenadorNome] = useState('');
+  const [formCoordenadorContato, setFormCoordenadorContato] = useState('');
+  const [formGerenteNome, setFormGerenteNome] = useState('');
+  const [formGerenteContato, setFormGerenteContato] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
   // Check Adm access
@@ -74,6 +78,10 @@ export function AreaManagement(): React.ReactElement {
     setFormCodigo('');
     setFormNome('');
     setFormTorre('');
+    setFormCoordenadorNome('');
+    setFormCoordenadorContato('');
+    setFormGerenteNome('');
+    setFormGerenteContato('');
     setShowForm(true);
     setError(null);
     setSuccess(null);
@@ -85,6 +93,10 @@ export function AreaManagement(): React.ReactElement {
     setFormCodigo(area.codigo);
     setFormNome(area.nome);
     setFormTorre(area.torre || '');
+    setFormCoordenadorNome(area.coordenadorNome || '');
+    setFormCoordenadorContato(area.coordenadorContato || '');
+    setFormGerenteNome(area.gerenteNome || '');
+    setFormGerenteContato(area.gerenteContato || '');
     setShowForm(true);
     setError(null);
     setSuccess(null);
@@ -119,6 +131,10 @@ export function AreaManagement(): React.ReactElement {
           codigo: formCodigo.trim(),
           nome: formNome.trim(),
           torre: formTorre.trim() || null,
+          coordenadorNome: formCoordenadorNome.trim() || null,
+          coordenadorContato: formCoordenadorContato.trim() || null,
+          gerenteNome: formGerenteNome.trim() || null,
+          gerenteContato: formGerenteContato.trim() || null,
         };
 
         let response: Response;
@@ -222,13 +238,15 @@ export function AreaManagement(): React.ReactElement {
               <th>Código</th>
               <th>Nome</th>
               <th>Torre</th>
+              <th>Coordenador</th>
+              <th>Gerente</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {areas.length === 0 ? (
               <tr>
-                <td colSpan={4} className="area-management__empty">
+                <td colSpan={6} className="area-management__empty">
                   {loading ? 'Carregando...' : 'Nenhuma área cadastrada.'}
                 </td>
               </tr>
@@ -238,6 +256,8 @@ export function AreaManagement(): React.ReactElement {
                   <td>{area.codigo}</td>
                   <td>{area.nome}</td>
                   <td>{area.torre || '—'}</td>
+                  <td>{area.coordenadorNome || '—'}</td>
+                  <td>{area.gerenteNome || '—'}</td>
                   <td>
                     <button
                       type="button"
@@ -310,6 +330,69 @@ export function AreaManagement(): React.ReactElement {
                   onChange={(e) => setFormTorre(e.target.value)}
                   placeholder="Torre (opcional)"
                 />
+              </div>
+
+              <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '1rem 0' }} />
+              <h3 style={{ fontSize: '0.9rem', color: '#a1a1aa', marginBottom: '0.75rem' }}>Escalation — Coordenador</h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="area-management__field">
+                  <label className="area-management__label" htmlFor="area-coord-nome">
+                    Nome do Coordenador
+                  </label>
+                  <input
+                    id="area-coord-nome"
+                    className="area-management__input"
+                    type="text"
+                    value={formCoordenadorNome}
+                    onChange={(e) => setFormCoordenadorNome(e.target.value)}
+                    placeholder="Nome"
+                  />
+                </div>
+                <div className="area-management__field">
+                  <label className="area-management__label" htmlFor="area-coord-contato">
+                    Contato Coordenador
+                  </label>
+                  <input
+                    id="area-coord-contato"
+                    className="area-management__input"
+                    type="text"
+                    value={formCoordenadorContato}
+                    onChange={(e) => setFormCoordenadorContato(e.target.value)}
+                    placeholder="Telefone/WhatsApp"
+                  />
+                </div>
+              </div>
+
+              <h3 style={{ fontSize: '0.9rem', color: '#a1a1aa', margin: '1rem 0 0.75rem' }}>Escalation — Gerente</h3>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="area-management__field">
+                  <label className="area-management__label" htmlFor="area-gerente-nome">
+                    Nome do Gerente
+                  </label>
+                  <input
+                    id="area-gerente-nome"
+                    className="area-management__input"
+                    type="text"
+                    value={formGerenteNome}
+                    onChange={(e) => setFormGerenteNome(e.target.value)}
+                    placeholder="Nome"
+                  />
+                </div>
+                <div className="area-management__field">
+                  <label className="area-management__label" htmlFor="area-gerente-contato">
+                    Contato Gerente
+                  </label>
+                  <input
+                    id="area-gerente-contato"
+                    className="area-management__input"
+                    type="text"
+                    value={formGerenteContato}
+                    onChange={(e) => setFormGerenteContato(e.target.value)}
+                    placeholder="Telefone/WhatsApp"
+                  />
+                </div>
               </div>
 
               {error && (

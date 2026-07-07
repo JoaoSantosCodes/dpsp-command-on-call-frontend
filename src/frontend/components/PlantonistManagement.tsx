@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useCommandCenterStore } from '../store/command-center-store';
 import './PlantonistManagement.css';
 
-import type { Area } from '../../shared/types';
+import type { Area, Periodo } from '../../shared/types';
 
 interface PlantonistUser {
   id: number;
@@ -11,7 +11,14 @@ interface PlantonistUser {
   nome: string;
   perfil: string;
   cargo: string | null;
+  contato: string | null;
   username: string;
+}
+
+interface AreaHorario {
+  id: number;
+  horarios: string;
+  data: string;
 }
 
 /**
@@ -39,9 +46,15 @@ export function PlantonistManagement(): React.ReactElement {
   const [formNome, setFormNome] = useState('');
   const [formUsername, setFormUsername] = useState('');
   const [formSenha, setFormSenha] = useState('');
-  const [formCargo, setFormCargo] = useState('');
   const [formAreaCodigo, setFormAreaCodigo] = useState('');
+  const [formHorario, setFormHorario] = useState('');
+  const [formHorarioDatas, setFormHorarioDatas] = useState<Array<{data: string; horario: string}>>([]);
+  const [formSobreaviso, setFormSobreaviso] = useState<string[]>([]);
   const [formLoading, setFormLoading] = useState(false);
+
+  // Area horarios state (fetched when area is selected in form)
+  const [areaHorarios, setAreaHorarios] = useState<AreaHorario[]>([]);
+  const [horariosLoading, setHorariosLoading] = useState(false);
 
   // Check access: Adm or Responsavel
   if (!user || (user.perfil !== 'Adm' && user.perfil !== 'Responsavel')) {
@@ -105,6 +118,40 @@ export function PlantonistManagement(): React.ReactElement {
     fetchAreas();
   }, [fetchPlantonistas, fetchAreas]);
 
+  // Fetch horários when area changes in the form
+  useEffect(() => {
+    if (!formAreaCodigo || !showForm) {
+      setAreaHorarios([]);
+      return;
+    }
+
+    // Reset horário selection when area changes
+    setFormHorario('');
+
+    async function fetchAreaHorarios() {
+      setHorariosLoading(true);
+      try {
+        const response = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(formAreaCodigo)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const periodos = (data.periodos || data || []) as Periodo[];
+          // Extract unique horarios for this area
+          const horarios: AreaHorario[] = periodos.map((p) => ({
+            id: p.id,
+            horarios: p.horarios,
+            data: p.data,
+          }));
+          setAreaHorarios(horarios);
+        }
+      } catch { /* silent */ }
+      finally { setHorariosLoading(false); }
+    }
+
+    fetchAreaHorarios();
+  }, [formAreaCodigo, showForm, token]);
+
   // Get area name by codigo
   const getAreaNome = useCallback(
     (areaCodigo: string | null): string => {
@@ -118,27 +165,19 @@ export function PlantonistManagement(): React.ReactElement {
   // Open form for new plantonist
   const handleNew = useCallback(() => {
     setEditingPlantonist(null);
-    setFormNome('');
-    setFormUsername('');
-    setFormSenha('');
-    setFormCargo('');
-    setFormAreaCodigo('');
-    setShowForm(true);
-    setError(null);
-    setSuccess(null);
+    setFormNome(''); setFormUsername(''); setFormSenha('');
+    setFormAreaCodigo(''); setFormHorario('');
+    setFormHorarioDatas([]); setFormSobreaviso([]);
+    setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
   // Open form for editing
   const handleEdit = useCallback((plantonist: PlantonistUser) => {
     setEditingPlantonist(plantonist);
-    setFormNome(plantonist.nome);
-    setFormUsername(plantonist.username);
-    setFormSenha('');
-    setFormCargo(plantonist.cargo || '');
+    setFormNome(plantonist.nome); setFormUsername(plantonist.username); setFormSenha('');
     setFormAreaCodigo(plantonist.areaCodigo || '');
-    setShowForm(true);
-    setError(null);
-    setSuccess(null);
+    setFormHorario(''); setFormHorarioDatas([]); setFormSobreaviso([]);
+    setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
   // Close form
@@ -154,16 +193,8 @@ export function PlantonistManagement(): React.ReactElement {
       setError(null);
       setSuccess(null);
 
-      if (!formNome.trim()) {
-        setError('Nome é obrigatório.');
-        return;
-      }
       if (!formUsername.trim()) {
-        setError('Username é obrigatório.');
-        return;
-      }
-      if (!editingPlantonist && !formSenha.trim()) {
-        setError('Senha é obrigatória para novo plantonista.');
+        setError('Selecione um plantonista.');
         return;
       }
       if (!formAreaCodigo) {
@@ -176,37 +207,18 @@ export function PlantonistManagement(): React.ReactElement {
       try {
         let response: Response;
 
-        if (editingPlantonist) {
-          // Update existing
-          const body = {
-            codigo: editingPlantonist.codigo,
-            areaCodigo: formAreaCodigo,
-            nome: formNome.trim(),
-            perfil: 'Plantonista',
-            cargo: formCargo.trim() || null,
-            username: formUsername.trim(),
-          };
-          response = await fetch(`/api/users/${editingPlantonist.id}`, {
+        // Plantonista já existe — apenas atualizar vínculo se necessário
+        const selected = plantonistas.find(p => p.username === formUsername);
+        if (selected) {
+          response = await fetch(`/api/users/${selected.id}`, {
             method: 'PUT',
             headers: authHeaders,
-            body: JSON.stringify(body),
+            body: JSON.stringify({ areaCodigo: formAreaCodigo }),
           });
         } else {
-          // Create new
-          const body = {
-            codigo: `PLAN-${Date.now()}`,
-            areaCodigo: formAreaCodigo,
-            nome: formNome.trim(),
-            perfil: 'Plantonista',
-            cargo: formCargo.trim() || null,
-            username: formUsername.trim(),
-            senha: formSenha.trim(),
-          };
-          response = await fetch('/api/users', {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify(body),
-          });
+          setError('Plantonista não encontrado.');
+          setFormLoading(false);
+          return;
         }
 
         if (!response.ok) {
@@ -225,7 +237,7 @@ export function PlantonistManagement(): React.ReactElement {
         setFormLoading(false);
       }
     },
-    [formNome, formUsername, formSenha, formCargo, formAreaCodigo, editingPlantonist, authHeaders, fetchPlantonistas]
+    [formNome, formUsername, formSenha, formAreaCodigo, editingPlantonist, authHeaders, fetchPlantonistas]
   );
 
   // Delete plantonist
@@ -291,6 +303,9 @@ export function PlantonistManagement(): React.ReactElement {
             <tr>
               <th>Nome</th>
               <th>Cargo</th>
+              <th>Horário</th>
+              <th>Sobreaviso</th>
+              <th>Escalation</th>
               <th>Área</th>
               <th>Ações</th>
             </tr>
@@ -298,34 +313,54 @@ export function PlantonistManagement(): React.ReactElement {
           <tbody>
             {plantonistas.length === 0 ? (
               <tr>
-                <td colSpan={4} className="plantonist-management__empty">
+                <td colSpan={7} className="plantonist-management__empty">
                   {loading ? 'Carregando...' : 'Nenhum plantonista cadastrado.'}
                 </td>
               </tr>
             ) : (
-              plantonistas.map((plantonist) => (
-                <tr key={plantonist.id}>
-                  <td>{plantonist.nome}</td>
-                  <td>{plantonist.cargo || '—'}</td>
-                  <td>{getAreaNome(plantonist.areaCodigo)}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="plantonist-management__btn plantonist-management__btn--edit"
-                      onClick={() => handleEdit(plantonist)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="plantonist-management__btn plantonist-management__btn--delete"
-                      onClick={() => handleDelete(plantonist)}
-                    >
-                      Deletar
-                    </button>
-                  </td>
-                </tr>
-              ))
+              plantonistas.map((plantonist) => {
+                // Parse cargo to extract horario if present
+                const cargoRaw = plantonist.cargo || '';
+                const horarioMatch = cargoRaw.match(/\(([^)]+)\)$/);
+                const horario = horarioMatch ? horarioMatch[1] : '—';
+                const cargoClean = horarioMatch ? cargoRaw.replace(horarioMatch[0], '').trim() : cargoRaw;
+
+                // Get escalation chain from the area
+                const area = areas.find((a) => a.codigo === plantonist.areaCodigo);
+
+                return (
+                  <tr key={plantonist.id}>
+                    <td>{plantonist.nome}</td>
+                    <td>{cargoClean || '—'}</td>
+                    <td><span style={{ color: '#818cf8', fontSize: '0.85rem' }}>🕐 {horario}</span></td>
+                    <td><span style={{ color: '#22c55e', fontSize: '0.85rem' }}>{plantonist.contato ? `📅 ${plantonist.contato}` : '—'}</span></td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.8rem' }}>
+                        <span>1º 📞 {plantonist.nome}</span>
+                        <span style={{ color: '#f59e0b' }}>2º 📞 {area?.coordenadorNome || '⚠ Sem coordenador'}</span>
+                        <span style={{ color: '#ef4444' }}>3º 📞 {area?.gerenteNome || '⚠ Sem gerente'}</span>
+                      </div>
+                    </td>
+                    <td>{getAreaNome(plantonist.areaCodigo)}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="plantonist-management__btn plantonist-management__btn--edit"
+                        onClick={() => handleEdit(plantonist)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="plantonist-management__btn plantonist-management__btn--delete"
+                        onClick={() => handleDelete(plantonist)}
+                      >
+                        Deletar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -338,106 +373,72 @@ export function PlantonistManagement(): React.ReactElement {
               {editingPlantonist ? 'Editar Plantonista' : 'Novo Plantonista'}
             </h2>
             <form className="plantonist-management__form" onSubmit={handleSave}>
-              <div className="plantonist-management__field">
-                <label className="plantonist-management__label" htmlFor="plantonist-nome">
-                  Nome *
-                </label>
-                <input
-                  id="plantonist-nome"
-                  className="plantonist-management__input"
-                  type="text"
-                  value={formNome}
-                  onChange={(e) => setFormNome(e.target.value)}
-                  placeholder="Nome do plantonista"
-                  required
-                />
-              </div>
 
               <div className="plantonist-management__field">
-                <label className="plantonist-management__label" htmlFor="plantonist-username">
-                  Username *
-                </label>
-                <input
-                  id="plantonist-username"
-                  className="plantonist-management__input"
-                  type="text"
-                  value={formUsername}
-                  onChange={(e) => setFormUsername(e.target.value)}
-                  placeholder="Username para login"
-                  required
-                />
-              </div>
-
-              {!editingPlantonist && (
-                <div className="plantonist-management__field">
-                  <label className="plantonist-management__label" htmlFor="plantonist-senha">
-                    Senha *
-                  </label>
-                  <input
-                    id="plantonist-senha"
-                    className="plantonist-management__input"
-                    type="password"
-                    value={formSenha}
-                    onChange={(e) => setFormSenha(e.target.value)}
-                    placeholder="Senha de acesso"
-                    required
-                  />
-                </div>
-              )}
-
-              <div className="plantonist-management__field">
-                <label className="plantonist-management__label" htmlFor="plantonist-cargo">
-                  Cargo
-                </label>
-                <input
-                  id="plantonist-cargo"
-                  className="plantonist-management__input"
-                  type="text"
-                  value={formCargo}
-                  onChange={(e) => setFormCargo(e.target.value)}
-                  placeholder="Cargo (opcional)"
-                />
-              </div>
-
-              <div className="plantonist-management__field">
-                <label className="plantonist-management__label" htmlFor="plantonist-area">
-                  Área vinculada *
-                </label>
-                <select
-                  id="plantonist-area"
-                  className="plantonist-management__select"
-                  value={formAreaCodigo}
-                  onChange={(e) => setFormAreaCodigo(e.target.value)}
-                  required
-                >
+                <label className="plantonist-management__label">Área vinculada *</label>
+                <select className="plantonist-management__select" value={formAreaCodigo} onChange={(e) => { setFormAreaCodigo(e.target.value); setFormUsername(''); setFormNome(''); }} required>
                   <option value="">Selecione uma área</option>
                   {areas.map((area) => (
-                    <option key={area.id} value={area.codigo}>
-                      {area.nome}
-                    </option>
+                    <option key={area.id} value={area.codigo}>{area.nome}</option>
                   ))}
                 </select>
               </div>
 
-              {error && (
-                <div className="plantonist-management__error" role="alert">
-                  {error}
+              {/* Select plantonista existente da área */}
+              {formAreaCodigo && (
+                <div className="plantonist-management__field">
+                  <label className="plantonist-management__label">Plantonista *</label>
+                  <select className="plantonist-management__select" value={formUsername} onChange={(e) => { setFormUsername(e.target.value); const p = plantonistas.find(x => x.username === e.target.value); if (p) setFormNome(p.nome); }} required>
+                    <option value="">Selecione o plantonista</option>
+                    {plantonistas.filter(p => p.areaCodigo === formAreaCodigo).map((p) => (
+                      <option key={p.id} value={p.username}>{p.nome} — {p.cargo || 'Plantonista'}</option>
+                    ))}
+                  </select>
                 </div>
               )}
 
+              {/* Info do plantonista selecionado: Nível + Cargo */}
+              {formUsername && (() => {
+                const selected = plantonistas.find(p => p.username === formUsername);
+                return selected ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#a1a1aa', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Nível de Escalonamento</div>
+                      <div style={{ fontSize: '0.85rem', color: '#e4e4e7' }}>{(selected as any).nivelEscalonamento || '1º Escalão'}</div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#a1a1aa', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Cargo</div>
+                      <div style={{ fontSize: '0.85rem', color: '#e4e4e7' }}>{selected.cargo || '—'}</div>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Responsável da Área (info block) */}
+              {formAreaCodigo && (() => {
+                const selectedArea = areas.find((a) => a.codigo === formAreaCodigo);
+                return selectedArea ? (
+                  <div style={{ background: 'rgba(99,102,241,0.05)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#818cf8', fontWeight: 600, marginBottom: '0.3rem' }}>Responsável da área</div>
+                    <div style={{ fontSize: '0.9rem', color: '#e4e4e7' }}>{selectedArea.coordenadorNome || '—'}</div>
+                    <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.4rem', fontSize: '0.8rem', color: '#a1a1aa' }}>
+                      <span><strong>Torre:</strong> {selectedArea.torre || '—'}</span>
+                      <span><strong>Área:</strong> {selectedArea.nome}</span>
+                    </div>
+                    {selectedArea.gerenteNome && (
+                      <div style={{ marginTop: '0.3rem', fontSize: '0.8rem', color: '#a1a1aa' }}>
+                        <strong>Gerente:</strong> {selectedArea.gerenteNome}
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              })()}
+
+              {error && (<div className="plantonist-management__error" role="alert">{error}</div>)}
+
               <div className="plantonist-management__form-actions">
-                <button
-                  type="button"
-                  className="plantonist-management__btn plantonist-management__btn--cancel"
-                  onClick={handleCancel}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="plantonist-management__btn plantonist-management__btn--primary"
-                  disabled={formLoading || !formNome || !formUsername || !formAreaCodigo}
-                >
+                <button type="button" className="plantonist-management__btn plantonist-management__btn--cancel" onClick={handleCancel}>Cancelar</button>
+                <button type="submit" className="plantonist-management__btn plantonist-management__btn--primary" disabled={formLoading || !formNome || !formUsername || !formAreaCodigo}>
                   {formLoading ? 'Salvando...' : 'Salvar'}
                 </button>
               </div>

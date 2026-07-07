@@ -13,35 +13,69 @@
 .app__nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  background-color: #16213e;
-  border-bottom: 1px solid #0f3460;
-  min-height: 48px;
+  padding: 0 12px;
+  background-color: #0d1b2a;
+  border-bottom: 1px solid #1b2838;
+  min-height: 44px;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.app__nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 8px;
   flex-shrink: 0;
 }
 
-.app__nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.app__nav-profile {
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 20px;
+  color: #c7d2fe;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
 }
 
-.app__nav-title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-  white-space: nowrap;
+.app__nav-profile:hover {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.app__theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.app__theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Connection status */
 .app__connection-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
+  gap: 5px;
+  font-size: 0.7rem;
   color: #9ca3af;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  white-space: nowrap;
 }
 
 .app__status-dot {
@@ -77,19 +111,21 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 2px;
+  gap: 0;
+  overflow-x: auto;
+  flex: 1;
 }
 
 .app__nav-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: 4px;
+  padding: 10px 12px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: #9ca3af;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background-color 0.2s;
@@ -103,7 +139,8 @@
 
 .app__nav-tab--active {
   color: #ffffff;
-  border-bottom-color: #4fc3f7;
+  border-bottom-color: #6366f1;
+  background-color: rgba(99, 102, 241, 0.1);
 }
 
 .app__nav-tab-icon {

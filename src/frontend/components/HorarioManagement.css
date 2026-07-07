@@ -1,0 +1,198 @@
+.horario-management {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.horario-management__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #e4e4e7);
+}
+
+.horario-management__subtitle {
+  color: var(--text-secondary, #a1a1aa);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.horario-management__error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.horario-management__success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+/* === Form Card === */
+.horario-management__form-card {
+  background: var(--surface-secondary, #1e1e2e);
+  border: 1px solid var(--border-color, #2e2e3e);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.horario-management__form-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary, #e4e4e7);
+}
+
+.horario-management__form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .horario-management__form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.horario-management__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.horario-management__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, #a1a1aa);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.horario-management__select {
+  background: var(--surface-primary, #0f0f1a);
+  border: 1px solid var(--border-color, #2e2e3e);
+  color: var(--text-primary, #e4e4e7);
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.horario-management__select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.horario-management__form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.horario-management__btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.horario-management__btn--primary {
+  background: #6366f1;
+  color: #fff;
+}
+
+.horario-management__btn--primary:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.horario-management__btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.horario-management__btn--delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.horario-management__btn--delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* === Table === */
+.horario-management__table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #2e2e3e);
+}
+
+.horario-management__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.horario-management__table thead {
+  background: var(--surface-secondary, #1e1e2e);
+}
+
+.horario-management__table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--text-secondary, #a1a1aa);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-color, #2e2e3e);
+}
+
+.horario-management__table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, #1e1e2e);
+  color: var(--text-primary, #e4e4e7);
+}
+
+.horario-management__table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.horario-management__empty {
+  text-align: center;
+  color: var(--text-secondary, #a1a1aa);
+  padding: 2rem !important;
+}
+
+.horario-management__time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
