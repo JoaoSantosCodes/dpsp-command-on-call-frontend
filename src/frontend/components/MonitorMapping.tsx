@@ -196,23 +196,28 @@ export function MonitorMapping(): React.ReactElement {
                           <span style={{ fontSize: '0.7rem', color: '#22c55e' }}>📞 {e.contato}</span>
                           <span style={{ fontSize: '0.7rem', color: '#818cf8' }}>🕐 {e.horario}</span>
                           <span style={{ fontSize: '0.7rem', color: '#a1a1aa' }}>📅 {e.data}</span>
-                          <select
-                            style={{ marginLeft: 'auto', fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: '#1a2332', border: '1px solid rgba(255,255,255,0.15)', color: '#e4e4e7', cursor: 'pointer' }}
-                            defaultValue={e.statusContato || 'pendente'}
-                            onChange={async (ev) => {
-                              const status = ev.target.value;
-                              try {
-                                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-                                if (token) headers['Authorization'] = `Bearer ${token}`;
-                                await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: e.plantonista, areaCodigo: e.areaCodigo, problemaCodigo: selectedProblema?.codigo, data: e.data, status }) });
-                                e.statusContato = status;
-                              } catch {}
-                            }}
-                          >
-                            <option value="pendente">Pendente</option>
-                            <option value="atendido">Atendido</option>
-                            <option value="nao_atendido">Não Atendido</option>
-                          </select>
+                          <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', width: '100%', marginTop: '0.3rem' }}>
+                            <select
+                              style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: '#1a2332', border: '1px solid rgba(255,255,255,0.15)', color: '#e4e4e7', cursor: 'pointer' }}
+                              defaultValue={e.statusContato || 'pendente'}
+                              onChange={async (ev) => {
+                                const status = ev.target.value;
+                                const obsInput = document.getElementById(`obs-${i}-${pa.areaCodigo}`) as HTMLInputElement;
+                                const observacao = obsInput?.value || '';
+                                try {
+                                  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                                  if (token) headers['Authorization'] = `Bearer ${token}`;
+                                  await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: e.plantonista, areaCodigo: e.areaCodigo, problemaCodigo: selectedProblema?.codigo, data: e.data, status, observacao }) });
+                                  e.statusContato = status;
+                                } catch {}
+                              }}
+                            >
+                              <option value="pendente">Pendente</option>
+                              <option value="atendido">Atendido</option>
+                              <option value="nao_atendido">Não Atendido</option>
+                            </select>
+                            <input id={`obs-${i}-${pa.areaCodigo}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: '#1a2332', border: '1px solid rgba(255,255,255,0.1)', color: '#e4e4e7' }} />
+                          </div>
                         </div>
                       ))}
                     </div>
