@@ -13,6 +13,7 @@ import { EscalaManagement } from './components/EscalaManagement';
 import { HorarioManagement } from './components/HorarioManagement';
 import { ProblemaManagement } from './components/ProblemaManagement';
 import { TeamManagement } from './components/TeamManagement';
+import { UserManagement } from './components/UserManagement';
 import { Login } from './components/Login';
 import { RegisterUser } from './components/RegisterUser';
 import { AreaSelector } from './components/AreaSelector';
@@ -24,7 +25,7 @@ import type { AppView } from '../shared/types';
 /**
  * Main navigation views accessible once authenticated.
  */
-type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management';
+type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management' | 'user-management';
 
 interface NavItem {
   id: AuthenticatedView;
@@ -123,6 +124,7 @@ function AuthenticatedApp({
       { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
       { id: 'csv-import' as AuthenticatedView, label: 'Importar', icon: '' },
       { id: 'area-management' as AuthenticatedView, label: 'Áreas', icon: '' },
+      { id: 'user-management' as AuthenticatedView, label: 'Usuários', icon: '' },
       { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
       { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
       { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
@@ -131,6 +133,7 @@ function AuthenticatedApp({
     if (userPerfil === 'Responsavel') return [
       { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
       { id: 'csv-import' as AuthenticatedView, label: 'Exportar', icon: '' },
+      { id: 'user-management' as AuthenticatedView, label: 'Usuários', icon: '' },
       { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
       { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
       { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
@@ -316,6 +319,17 @@ function AuthenticatedApp({
             aria-hidden={currentView !== 'problema-management'}
           >
             {currentView === 'problema-management' && <ProblemaManagement />}
+          </div>
+        )}
+
+        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
+          <div
+            id="panel-user-management"
+            role="tabpanel"
+            className={`app__panel ${currentView === 'user-management' ? 'app__panel--active' : ''}`}
+            aria-hidden={currentView !== 'user-management'}
+          >
+            {currentView === 'user-management' && <UserManagement />}
           </div>
         )}
       </main>

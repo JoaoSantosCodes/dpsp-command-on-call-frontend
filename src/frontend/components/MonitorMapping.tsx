@@ -75,7 +75,7 @@ export function MonitorMapping(): React.ReactElement {
             horario: periodo ? periodo.horarios : '—',
             data: periodo ? periodo.data : '—',
             areaCodigo: pa.areaCodigo,
-            nivel: user?.nivelEscalonamento || 'N1',
+            nivel: user?.nivelEscalonamento || '—',
           });
         }
       }

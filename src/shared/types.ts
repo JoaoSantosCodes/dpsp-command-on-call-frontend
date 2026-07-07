@@ -235,7 +235,8 @@ export type AppView =
   | 'periodo-management'
   | 'escala-management'
   | 'horario-management'
-  | 'problema-management';
+  | 'problema-management'
+  | 'user-management';
 
 // === Zustand Store Types ===
 
