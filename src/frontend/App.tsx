@@ -14,6 +14,7 @@ import { HorarioManagement } from './components/HorarioManagement';
 import { ProblemaManagement } from './components/ProblemaManagement';
 import { TeamManagement } from './components/TeamManagement';
 import { UserManagement } from './components/UserManagement';
+import { RelatorioContato } from './components/RelatorioContato';
 import { Login } from './components/Login';
 import { RegisterUser } from './components/RegisterUser';
 import { AreaSelector } from './components/AreaSelector';
@@ -25,7 +26,7 @@ import type { AppView } from '../shared/types';
 /**
  * Main navigation views accessible once authenticated.
  */
-type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management' | 'user-management';
+type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management' | 'user-management' | 'relatorio-contato';
 
 interface NavItem {
   id: AuthenticatedView;
@@ -129,6 +130,7 @@ function AuthenticatedApp({
       { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
       { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
       { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
+      { id: 'relatorio-contato' as AuthenticatedView, label: 'Relatório', icon: '' },
     ];
     if (userPerfil === 'Responsavel') return [
       { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
@@ -138,6 +140,7 @@ function AuthenticatedApp({
       { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
       { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
       { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
+      { id: 'relatorio-contato' as AuthenticatedView, label: 'Relatório', icon: '' },
     ];
     if (userPerfil === 'Plantonista') return [
       { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
@@ -330,6 +333,17 @@ function AuthenticatedApp({
             aria-hidden={currentView !== 'user-management'}
           >
             {currentView === 'user-management' && <UserManagement />}
+          </div>
+        )}
+
+        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
+          <div
+            id="panel-relatorio-contato"
+            role="tabpanel"
+            className={`app__panel ${currentView === 'relatorio-contato' ? 'app__panel--active' : ''}`}
+            aria-hidden={currentView !== 'relatorio-contato'}
+          >
+            {currentView === 'relatorio-contato' && <RelatorioContato />}
           </div>
         )}
       </main>
