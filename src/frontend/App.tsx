@@ -117,13 +117,38 @@ function AuthenticatedApp({
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   }, []);
 
-  // Build nav items: include admin-only items for Adm users, and plantonist management for Responsavel
+  // Build nav items per profile
   const navItems = (() => {
-    if (userPerfil === 'Adm') return [...NAV_ITEMS, ...ADMIN_NAV_ITEMS];
-    if (userPerfil === 'Responsavel') return [
-      ...NAV_ITEMS,
+    if (userPerfil === 'Adm') return [
+      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
+      { id: 'csv-import' as AuthenticatedView, label: 'Importar', icon: '' },
+      { id: 'area-management' as AuthenticatedView, label: 'Áreas', icon: '' },
+      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
+      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
+      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
+      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
     ];
-    return NAV_ITEMS;
+    if (userPerfil === 'Responsavel') return [
+      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
+      { id: 'csv-import' as AuthenticatedView, label: 'Exportar', icon: '' },
+      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
+      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
+      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
+      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
+    ];
+    if (userPerfil === 'Plantonista') return [
+      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
+      { id: 'escala-management' as AuthenticatedView, label: 'Minha Escala', icon: '' },
+    ];
+    if (userPerfil === 'Consultor') return [
+      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
+      { id: 'csv-import' as AuthenticatedView, label: 'Exportar', icon: '' },
+      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
+      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
+      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
+      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
+    ];
+    return [{ id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' }];
   })();
 
   const handleNavClick = useCallback((view: AuthenticatedView) => {
