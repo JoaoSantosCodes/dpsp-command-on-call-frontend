@@ -56,6 +56,11 @@ export function MonitorMapping(): React.ReactElement {
       const users = usersData.users || usersData || [];
 
       const allEscalas: EscalaInfo[] = [];
+      // Get today's date in Brasilia timezone (YYYY-MM-DD)
+      const now = new Date();
+      const brasiliaStr = now.toLocaleString('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' });
+      const today = brasiliaStr.split(',')[0].trim(); // "2026-07-08"
+
       for (const pa of problema.areas) {
         const [escRes, perRes] = await Promise.all([
           fetch(`/api/escalas?areaCodigo=${encodeURIComponent(pa.areaCodigo)}`, { headers }),
@@ -67,8 +72,10 @@ export function MonitorMapping(): React.ReactElement {
         const perList = periodos.periodos || periodos || [];
 
         for (const e of escList) {
-          const user = users.find((u: any) => u.codigo === e.usuarioCodigo);
           const periodo = perList.find((p: any) => p.codigo === e.periodoCodigo);
+          // Only show today's plantonista
+          if (periodo && periodo.data !== today) continue;
+          const user = users.find((u: any) => u.codigo === e.usuarioCodigo);
           allEscalas.push({
             plantonista: user ? user.nome : e.usuarioCodigo,
             contato: user?.contato || '—',

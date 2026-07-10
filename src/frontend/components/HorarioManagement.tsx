@@ -90,22 +90,40 @@ export function HorarioManagement(): React.ReactElement {
       const data = await response.json();
       const periodos = data.periodos || data || [];
 
-      // Map periodos to horario format (extract horarios field as inicio-fim)
+      // Map periodos to horario format — deduplicate by area + horário
       const mapped: Horario[] = periodos
-        .filter((p: any) => p.horarios && p.horarios.includes('-'))
+        .filter((p: any) => p.horarios && (p.horarios.includes('às') || p.horarios.includes('-') || p.horarios === '24hs' || p.horarios === '24h'))
         .map((p: any) => {
-          const parts = p.horarios.split('-');
+          let inicio = '', fim = '';
+          if (p.horarios === '24hs' || p.horarios === '24h') {
+            inicio = '00:00'; fim = '23:59';
+          } else if (p.horarios.includes('às')) {
+            const parts = p.horarios.split('às').map((s: string) => s.trim());
+            inicio = parts[0] || ''; fim = parts[1] || '';
+          } else {
+            const parts = p.horarios.split('-').map((s: string) => s.trim());
+            inicio = parts[0] || ''; fim = parts[1] || '';
+          }
           const areaNome = areas.find((a) => a.codigo === p.areaCodigo)?.nome || p.areaCodigo;
           return {
             id: p.id,
             areaCodigo: p.areaCodigo,
             areaNome,
-            horaInicio: parts[0]?.trim() || '',
-            horaFim: parts[1]?.trim() || '',
+            horaInicio: inicio,
+            horaFim: fim,
           };
         });
 
-      setHorarios(mapped);
+      // Deduplicate: keep only unique combinations of area + horário
+      const seen = new Set<string>();
+      const unique = mapped.filter((h) => {
+        const key = `${h.areaCodigo}|${h.horaInicio}|${h.horaFim}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      setHorarios(unique);
     } catch {
       setError('Erro ao carregar horários.');
     } finally {

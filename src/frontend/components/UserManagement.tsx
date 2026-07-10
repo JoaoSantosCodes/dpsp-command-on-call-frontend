@@ -18,6 +18,7 @@ export function UserManagement(): React.ReactElement {
   const [success, setSuccess] = useState<string | null>(null);
   const [editing, setEditing] = useState<UserItem | null>(null);
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // Form
   const [fNome, setFNome] = useState('');
@@ -80,17 +81,42 @@ export function UserManagement(): React.ReactElement {
 
   return (
     <div style={{ padding: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#e4e4e7', marginBottom: '1rem' }}>Gestão de Usuários</h1>
+      <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--page-text)', marginBottom: '1rem' }}>Gestão de Usuários</h1>
 
-      {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{error}</div>}
-      {success && <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{success}</div>}
+      {error && <div style={{ background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{error}</div>}
+      {success && <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{success}</div>}
 
-      <input style={{ width: '100%', background: '#1e1e2e', border: '1px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }} placeholder="🔍 Buscar por nome, perfil ou cargo..." value={search} onChange={e => setSearch(e.target.value)} />
+      <input style={{ width: '100%', background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }} placeholder="🔍 Buscar por nome, perfil ou cargo..." value={search} onChange={e => setSearch(e.target.value)} />
 
-      <div style={{ overflowX: 'auto', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+      {selectedIds.size > 0 && (
+        <div style={{ marginBottom: '0.75rem' }}>
+          <button onClick={async () => {
+            if (!confirm(`Deseja deletar ${selectedIds.size} usuário(s)?`)) return;
+            setError(null);
+            try {
+              for (const id of selectedIds) {
+                await fetch(`/api/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+              }
+              setSuccess(`${selectedIds.size} usuário(s) deletado(s).`);
+              setSelectedIds(new Set());
+              fetchUsers();
+            } catch { setError('Erro ao deletar.'); }
+          }} style={{ background: '#dc2626', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+            🗑️ Deletar Selecionados ({selectedIds.size})
+          </button>
+        </div>
+      )}
+
+      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-          <thead style={{ background: '#1e1e2e' }}>
+          <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
+              <th style={{ ...thStyle, width: '40px' }}>
+                <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => {
+                  if (e.target.checked) setSelectedIds(new Set(filtered.map(u => u.id)));
+                  else setSelectedIds(new Set());
+                }} />
+              </th>
               <th style={thStyle}>Nome</th>
               <th style={thStyle}>Perfil</th>
               <th style={thStyle}>Nível</th>
@@ -103,9 +129,16 @@ export function UserManagement(): React.ReactElement {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>{loading ? 'Carregando...' : 'Nenhum usuário'}</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>{loading ? 'Carregando...' : 'Nenhum usuário'}</td></tr>
             ) : filtered.map(u => (
-              <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <tr key={u.id} style={{ borderBottom: '1px solid var(--row-border)', background: selectedIds.has(u.id) ? 'rgba(99,102,241,0.08)' : undefined }}>
+                <td style={tdStyle}>
+                  <input type="checkbox" checked={selectedIds.has(u.id)} onChange={(e) => {
+                    const next = new Set(selectedIds);
+                    if (e.target.checked) next.add(u.id); else next.delete(u.id);
+                    setSelectedIds(next);
+                  }} />
+                </td>
                 <td style={tdStyle}>{u.nome}</td>
                 <td style={tdStyle}><span style={{ background: perfilColor(u.perfil), padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem' }}>{u.perfil}</span></td>
                 <td style={tdStyle}>{u.nivelEscalonamento || '—'}</td>
@@ -113,7 +146,18 @@ export function UserManagement(): React.ReactElement {
                 <td style={tdStyle}>{u.contato || '—'}</td>
                 <td style={tdStyle}>{getAreaNome(u.areaCodigo)}</td>
                 <td style={tdStyle}>{u.ativo ? '✅' : '❌'}</td>
-                <td style={tdStyle}><button onClick={() => openEdit(u)} style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }}>Editar</button></td>
+                <td style={tdStyle}>
+                  <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    <button onClick={() => openEdit(u)} style={editBtnStyle}>Editar</button>
+                    <button onClick={async () => {
+                      if (!confirm(`Deletar "${u.nome}"?`)) return;
+                      try {
+                        await fetch(`/api/users/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                        setSuccess('Usuário deletado.'); fetchUsers();
+                      } catch { setError('Erro'); }
+                    }} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -122,9 +166,9 @@ export function UserManagement(): React.ReactElement {
 
       {/* Modal de Edição */}
       {editing && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => setEditing(null)}>
-          <div style={{ background: '#0d1b2a', border: '1px solid #1e90ff', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '1.1rem', color: '#e4e4e7', marginBottom: '1rem' }}>Editar Usuário</h2>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => setEditing(null)}>
+          <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--modal-border)', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>Editar Usuário</h2>
 
             <Field label="Nome" value={fNome} onChange={setFNome} />
             <Field label="Username" value={fUsername} onChange={setFUsername} />
@@ -149,14 +193,14 @@ export function UserManagement(): React.ReactElement {
             <div style={{ ...fieldStyle, flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
               <label style={labelStyle}>Ativo</label>
               <input type="checkbox" checked={fAtivo} onChange={e => setFAtivo(e.target.checked)} style={{ width: '18px', height: '18px' }} />
-              <span style={{ fontSize: '0.8rem', color: fAtivo ? '#22c55e' : '#ef4444' }}>{fAtivo ? 'Ativo' : 'Desabilitado'}</span>
+              <span style={{ fontSize: '0.8rem', color: fAtivo ? 'var(--success-text)' : 'var(--error-text)' }}>{fAtivo ? 'Ativo' : 'Desabilitado'}</span>
             </div>
 
-            {error && <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</div>}
+            {error && <div style={{ color: 'var(--error-text)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</div>}
 
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-              <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '0.6rem', background: '#1e1e2e', border: '1px solid rgba(255,255,255,0.1)', color: '#e4e4e7', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '0.6rem', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>{saving ? 'Salvando...' : 'Salvar'}</button>
+              <button onClick={() => setEditing(null)} style={cancelBtnStyle}>Cancelar</button>
+              <button onClick={handleSave} disabled={saving} style={{ ...primaryBtnStyle, opacity: saving ? 0.5 : 1 }}>{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
           </div>
         </div>
@@ -170,12 +214,15 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
   return (<div style={fieldStyle}><label style={labelStyle}>{label}</label><input style={inputStyle} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} /></div>);
 }
 
-function perfilColor(p: string) { return p === 'Adm' ? 'rgba(239,68,68,0.2)' : p === 'Responsavel' ? 'rgba(245,158,11,0.2)' : p === 'Consultor' ? 'rgba(99,102,241,0.2)' : 'rgba(34,197,94,0.2)'; }
+function perfilColor(p: string) { return p === 'Adm' ? 'var(--badge-red-bg)' : p === 'Responsavel' ? 'var(--badge-yellow-bg)' : p === 'Consultor' ? 'var(--badge-indigo-bg)' : 'var(--badge-green-bg)'; }
 
-const thStyle: React.CSSProperties = { textAlign: 'left', padding: '0.6rem 0.75rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', fontSize: '0.65rem', borderBottom: '1px solid rgba(255,255,255,0.08)' };
-const tdStyle: React.CSSProperties = { padding: '0.5rem 0.75rem', color: '#e4e4e7' };
+const thStyle: React.CSSProperties = { textAlign: 'left', padding: '0.6rem 0.75rem', fontWeight: 600, color: 'var(--th-color)', textTransform: 'uppercase', fontSize: '0.65rem', borderBottom: '1px solid var(--th-border)' };
+const tdStyle: React.CSSProperties = { padding: '0.5rem 0.75rem', color: 'var(--page-text)' };
+const editBtnStyle: React.CSSProperties = { background: 'var(--btn-edit-bg)', border: '1px solid var(--btn-edit-border)', color: 'var(--btn-edit-text)', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' };
+const cancelBtnStyle: React.CSSProperties = { flex: 1, padding: '0.6rem', background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', color: 'var(--btn-cancel-text)', borderRadius: '8px', cursor: 'pointer' };
+const primaryBtnStyle: React.CSSProperties = { flex: 1, padding: '0.6rem', background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', borderRadius: '8px', cursor: 'pointer' };
 const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' };
-const labelStyle: React.CSSProperties = { fontSize: '0.7rem', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase' };
-const inputStyle: React.CSSProperties = { background: '#1a2332', border: '1px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '0.5rem 0.6rem', borderRadius: '6px', fontSize: '0.85rem' };
+const labelStyle: React.CSSProperties = { fontSize: '0.7rem', fontWeight: 600, color: 'var(--page-text-muted)', textTransform: 'uppercase' };
+const inputStyle: React.CSSProperties = { background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.6rem', borderRadius: '6px', fontSize: '0.85rem' };
 
 export default UserManagement;

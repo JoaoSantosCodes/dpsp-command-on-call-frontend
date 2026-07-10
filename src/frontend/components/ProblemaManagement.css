@@ -4,43 +4,43 @@
   margin: 0 auto;
 }
 .problema-management__title { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary, #e4e4e7); }
-.problema-management__error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
-.problema-management__success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+.problema-management__error { background: var(--error-bg); border: 1px solid var(--error-border); color: var(--error-text); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
+.problema-management__success { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success-text); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
 .problema-management__actions { margin-bottom: 1.5rem; }
 .problema-management__btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
-.problema-management__btn--primary { background: #6366f1; color: #fff; }
+.problema-management__btn--primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
 .problema-management__btn--primary:hover:not(:disabled) { background: #4f46e5; }
 .problema-management__btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.problema-management__btn--edit { background: rgba(99,102,241,0.1); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); margin-right: 0.25rem; }
-.problema-management__btn--delete { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+.problema-management__btn--edit { background: var(--btn-edit-bg); color: var(--btn-edit-text); border: 1px solid var(--btn-edit-border); margin-right: 0.25rem; }
+.problema-management__btn--delete { background: var(--badge-red-bg); color: var(--badge-red-text); border: 1px solid var(--error-border); }
 .problema-management__btn--small { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
 .problema-management__table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color, #2e2e3e); }
 .problema-management__table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .problema-management__table thead { background: var(--surface-secondary, #1e1e2e); }
 .problema-management__table th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-secondary, #a1a1aa); text-transform: uppercase; font-size: 0.75rem; border-bottom: 1px solid var(--border-color, #2e2e3e); }
-.problema-management__table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color, #1e1e2e); color: var(--text-primary, #e4e4e7); }
+.problema-management__table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color, #e5e7eb); color: var(--text-primary, #e4e4e7); }
 .problema-management__table tbody tr:hover { background: rgba(99,102,241,0.05); }
 .problema-management__empty { text-align: center; color: var(--text-secondary, #a1a1aa); padding: 2rem !important; }
 
-.problema-management__form-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.problema-management__form-card { background: var(--surface-primary, #0f0f1a); border: 1px solid var(--border-color, #2e2e3e); border-radius: 16px; padding: 2rem; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+.problema-management__form-overlay { position: fixed; inset: 0; background: var(--overlay-bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.problema-management__form-card { background: var(--modal-bg); border: 1px solid var(--modal-border); border-radius: 16px; padding: 2rem; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
 .problema-management__form-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary, #e4e4e7); }
 .problema-management__field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
 .problema-management__label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary, #a1a1aa); text-transform: uppercase; }
-.problema-management__input, .problema-management__select { background: var(--surface-secondary, #1e1e2e); border: 1px solid var(--border-color, #2e2e3e); color: var(--text-primary, #e4e4e7); padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 0.9rem; }
-.problema-management__input:focus, .problema-management__select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+.problema-management__input, .problema-management__select { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text); padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 0.9rem; }
+.problema-management__input:focus, .problema-management__select:focus { outline: none; border-color: var(--btn-primary-bg); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
 .problema-management__form-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
-.problema-management__btn--cancel { background: var(--surface-secondary, #1e1e2e); color: var(--text-primary, #e4e4e7); border: 1px solid var(--border-color, #2e2e3e); }
+.problema-management__btn--cancel { background: var(--btn-cancel-bg); color: var(--btn-cancel-text); border: 1px solid var(--btn-cancel-border); }
 
 .problema-management__grid { margin-top: 1rem; border: 1px solid var(--border-color, #2e2e3e); border-radius: 8px; overflow: hidden; }
 .problema-management__grid-header { display: grid; grid-template-columns: 60px 1fr 60px; background: var(--surface-secondary, #1e1e2e); padding: 0.5rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary, #a1a1aa); text-transform: uppercase; }
-.problema-management__grid-row { display: grid; grid-template-columns: 60px 1fr 60px; padding: 0.5rem 0.75rem; border-top: 1px solid var(--border-color, #1e1e2e); align-items: center; }
+.problema-management__grid-row { display: grid; grid-template-columns: 60px 1fr 60px; padding: 0.5rem 0.75rem; border-top: 1px solid var(--border-color, #e5e7eb); align-items: center; }
 .problema-management__grid-row:hover { background: rgba(99,102,241,0.05); }
-.problema-management__grid-ordem { font-weight: 700; color: #818cf8; }
+.problema-management__grid-ordem { font-weight: 700; color: var(--badge-indigo-text); }
 .problema-management__grid-add { display: flex; gap: 0.5rem; margin-top: 0.75rem; align-items: end; }
 .problema-management__grid-add select { flex: 1; }
 
 .problema-management__areas-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-.problema-management__area-badge { display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); color: #818cf8; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+.problema-management__area-badge { display: inline-flex; align-items: center; gap: 0.2rem; background: var(--badge-indigo-bg); border: 1px solid var(--btn-edit-border); color: var(--badge-indigo-text); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
 .problema-management__area-badge-order { font-weight: 700; margin-right: 0.2rem; }

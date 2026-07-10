@@ -11,6 +11,9 @@ interface ImportResponse {
   totalEntries?: number;
   areasCreated?: number;
   usersCreated?: number;
+  usersUpdated?: number;
+  periodosCreated?: number;
+  escalasCreated?: number;
   errors?: string[];
 }
 
@@ -51,8 +54,8 @@ export function CSVImport(): React.ReactElement {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setIsDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.csv')) uploadFile(file);
-    else { setStatus('error'); setErrorMsg('Apenas arquivos .csv'); }
+    if (file && (file.name.endsWith('.csv') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) uploadFile(file);
+    else { setStatus('error'); setErrorMsg('Apenas arquivos .csv, .xlsx ou .xls'); }
   }, [uploadFile]);
 
   // === EXPORT FUNCTIONS ===
@@ -187,11 +190,11 @@ export function CSVImport(): React.ReactElement {
             onClick={() => fileInputRef.current?.click()}
             role="button" tabIndex={0}
           >
-            <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFileSelect} />
+            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleFileSelect} />
             {status === 'uploading' ? (
               <span>Processando...</span>
             ) : (
-              <><span className="csv-import__dropzone-icon">📄</span><span>Arraste o CSV aqui ou clique para selecionar</span></>
+              <><span className="csv-import__dropzone-icon">📄</span><span>Arraste o CSV ou Excel (.xlsx) aqui ou clique para selecionar</span></>
             )}
           </div>
 
@@ -201,10 +204,13 @@ export function CSVImport(): React.ReactElement {
             <div className="csv-import__result csv-import__result--success">
               <span>✓ Importação realizada com sucesso!</span>
               <ul>
-                <li>Áreas: <strong>{result.areas?.length || 0}</strong></li>
-                <li>Entradas: <strong>{result.totalEntries}</strong></li>
+                <li>Áreas encontradas: <strong>{result.areas?.length || 0}</strong></li>
+                <li>Entradas de escala: <strong>{result.totalEntries}</strong></li>
                 <li>Áreas criadas: <strong>{result.areasCreated || 0}</strong></li>
                 <li>Usuários criados: <strong>{result.usersCreated || 0}</strong></li>
+                {(result.usersUpdated || 0) > 0 && <li>Usuários atualizados (de-para): <strong>{result.usersUpdated}</strong></li>}
+                <li>Períodos criados: <strong>{result.periodosCreated || 0}</strong></li>
+                <li>Escalas criadas: <strong>{result.escalasCreated || 0}</strong></li>
               </ul>
             </div>
           )}

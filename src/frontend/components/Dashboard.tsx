@@ -43,9 +43,13 @@ export function Dashboard(): React.ReactElement {
       if (res.ok) {
         const data = await res.json();
         setAllMonitors(data);
+        // Also update store if it's empty (no WebSocket data)
+        if (data.length > 0 && monitors.length === 0) {
+          useCommandCenterStore.getState().setMonitors(data);
+        }
       }
     } catch { /* silent */ }
-  }, [token]);
+  }, [token, monitors.length]);
 
   // Fetch area + schedule data from escalation API
   const fetchAreaData = useCallback(async () => {

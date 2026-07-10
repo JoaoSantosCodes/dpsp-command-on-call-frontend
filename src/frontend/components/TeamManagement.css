@@ -1,30 +1,32 @@
-.team-management { padding: 24px; max-width: 900px; margin: 0 auto; color: #e0e0e0; }
-.team-management__title { font-size: 1.5rem; font-weight: 600; color: #fff; margin: 0 0 24px; }
+.team-management { padding: 24px; max-width: 900px; margin: 0 auto; color: var(--page-text); }
+.team-management__title { font-size: 1.5rem; font-weight: 600; color: var(--page-text); margin: 0 0 24px; }
 .team-management__actions { display: flex; justify-content: flex-end; margin-bottom: 16px; }
-.team-management__btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
-.team-management__btn--primary { background: #4a90d9; color: #fff; }
-.team-management__btn--primary:hover { background: #357abd; }
-.team-management__btn--primary:disabled { background: #2a4a6e; opacity: 0.7; cursor: not-allowed; }
-.team-management__btn--edit { background: #f0a500; color: #1a1a2e; margin-right: 6px; }
-.team-management__btn--delete { background: #ff1744; color: #fff; }
-.team-management__btn--cancel { background: #374151; color: #e0e0e0; }
-.team-management__table-container { border: 1px solid #0f3460; border-radius: 6px; background: #16213e; overflow-x: auto; }
+.team-management__btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+.team-management__btn--primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
+.team-management__btn--primary:hover { opacity: 0.9; }
+.team-management__btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.team-management__btn--edit { background: var(--btn-edit-bg); color: var(--btn-edit-text); border: 1px solid var(--btn-edit-border); margin-right: 6px; }
+.team-management__btn--delete { background: var(--badge-red-bg); color: var(--badge-red-text); border: 1px solid var(--error-border); }
+.team-management__btn--cancel { background: var(--btn-cancel-bg); color: var(--btn-cancel-text); border: 1px solid var(--btn-cancel-border); }
+.team-management__table-container { border: 1px solid var(--surface-border); border-radius: 12px; background: var(--surface-bg); overflow-x: auto; }
 .team-management__table { width: 100%; border-collapse: collapse; }
-.team-management__table th, .team-management__table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #0f3460; }
-.team-management__table th { background: #1a1a2e; font-size: 0.85rem; font-weight: 600; color: #b0b0b0; text-transform: uppercase; }
-.team-management__table td { font-size: 0.9rem; color: #e0e0e0; }
-.team-management__empty { text-align: center; padding: 32px; color: #6b7280; }
-.team-management__form-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.team-management__form-card { background: #16213e; border: 1px solid #0f3460; border-radius: 8px; padding: 32px; width: 100%; max-width: 420px; }
-.team-management__form-card h2 { color: #fff; margin: 0 0 24px; font-size: 1.2rem; }
+.team-management__table th, .team-management__table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--surface-border); }
+.team-management__table th { background: var(--surface-bg); font-size: 0.85rem; font-weight: 600; color: var(--th-color); text-transform: uppercase; }
+.team-management__table td { font-size: 0.9rem; color: var(--page-text); }
+.team-management__table tr:last-child td { border-bottom: none; }
+.team-management__table tr:hover td { background: rgba(99,102,241,0.05); }
+.team-management__empty { text-align: center; padding: 32px; color: var(--page-text-dim); }
+.team-management__form-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--overlay-bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.team-management__form-card { background: var(--modal-bg); border: 1px solid var(--modal-border); border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; }
+.team-management__form-card h2 { color: var(--page-text); margin: 0 0 24px; font-size: 1.2rem; }
 .team-management__form { display: flex; flex-direction: column; gap: 16px; }
 .team-management__field { display: flex; flex-direction: column; gap: 6px; }
-.team-management__field label { font-size: 0.85rem; color: #b0b0b0; }
-.team-management__input { width: 100%; padding: 10px 12px; background: #1a1a2e; border: 1px solid #0f3460; border-radius: 4px; color: #e0e0e0; font-size: 0.95rem; outline: none; }
-.team-management__input:focus { border-color: #4a90d9; }
+.team-management__field label { font-size: 0.85rem; color: var(--page-text-muted); }
+.team-management__input { width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--input-text); font-size: 0.95rem; outline: none; }
+.team-management__input:focus { border-color: var(--btn-primary-bg); }
 .team-management__input:disabled { opacity: 0.5; cursor: not-allowed; }
 .team-management__form-actions { display: flex; gap: 12px; margin-top: 8px; }
 .team-management__form-actions .team-management__btn { flex: 1; }
-.team-management__error { background: rgba(255,23,68,0.15); border: 1px solid #ff1744; border-radius: 4px; padding: 10px; color: #ff1744; font-size: 0.85rem; text-align: center; margin-bottom: 16px; }
-.team-management__success { background: rgba(76,175,80,0.15); border: 1px solid #4caf50; border-radius: 4px; padding: 10px; color: #4caf50; font-size: 0.85rem; text-align: center; margin-bottom: 16px; }
-.team-management__denied { display: flex; align-items: center; justify-content: center; min-height: 300px; color: #ff1744; }
+.team-management__error { background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 6px; padding: 10px; color: var(--error-text); font-size: 0.85rem; text-align: center; margin-bottom: 16px; }
+.team-management__success { background: var(--success-bg); border: 1px solid var(--success-border); border-radius: 6px; padding: 10px; color: var(--success-text); font-size: 0.85rem; text-align: center; margin-bottom: 16px; }
+.team-management__denied { display: flex; align-items: center; justify-content: center; min-height: 300px; color: var(--error-text); }

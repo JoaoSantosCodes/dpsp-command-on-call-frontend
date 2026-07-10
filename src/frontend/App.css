@@ -1,3 +1,177 @@
+/* ===== Design Tokens (Dark Theme - Default) ===== */
+:root {
+  --page-bg: #1a1a2e;
+  --page-text: #e4e4e7;
+  --page-text-muted: #a1a1aa;
+  --page-text-dim: #6b7280;
+  --surface-bg: #1e1e2e;
+  --surface-border: rgba(255,255,255,0.08);
+  --input-bg: #1a2332;
+  --input-border: rgba(255,255,255,0.1);
+  --input-text: #e4e4e7;
+  --modal-bg: #0d1b2a;
+  --modal-border: #1e90ff;
+  --btn-primary-bg: #6366f1;
+  --btn-primary-text: #fff;
+  --btn-cancel-bg: #1e1e2e;
+  --btn-cancel-border: rgba(255,255,255,0.1);
+  --btn-cancel-text: #e4e4e7;
+  --btn-edit-bg: rgba(99,102,241,0.1);
+  --btn-edit-border: rgba(99,102,241,0.3);
+  --btn-edit-text: #818cf8;
+  --badge-green-bg: rgba(34,197,94,0.2);
+  --badge-green-text: #22c55e;
+  --badge-indigo-bg: rgba(99,102,241,0.2);
+  --badge-indigo-text: #818cf8;
+  --badge-red-bg: rgba(239,68,68,0.2);
+  --badge-red-text: #ef4444;
+  --badge-yellow-bg: rgba(245,158,11,0.2);
+  --badge-yellow-text: #f59e0b;
+  --error-bg: rgba(239,68,68,0.1);
+  --error-border: rgba(239,68,68,0.3);
+  --error-text: #ef4444;
+  --success-bg: rgba(34,197,94,0.1);
+  --success-border: rgba(34,197,94,0.3);
+  --success-text: #22c55e;
+  --row-border: rgba(255,255,255,0.05);
+  --th-color: #6b7280;
+  --th-border: rgba(255,255,255,0.08);
+  --overlay-bg: rgba(0,0,0,0.7);
+
+  /* Aliases usados por HorarioManagement / ProblemaManagement */
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --surface-primary: #0f0f1a;
+  --surface-secondary: #1e1e2e;
+  --border-color: #2e2e3e;
+
+  /* Mapa */
+  --mapa-bg: #0a0e1a;
+  --mapa-card-bg: #0d1b2a;
+  --mapa-border: rgba(30,144,255,0.3);
+  --mapa-border-hover: #1e90ff;
+  --mapa-container-bg: rgba(15,25,50,0.6);
+  --mapa-chip-bg: rgba(30,144,255,0.1);
+  --mapa-chip-border: rgba(30,144,255,0.4);
+  --mapa-chip-text: #90cdf4;
+  --mapa-search-bg: #0d1b2a;
+
+  /* Nav */
+  --nav-bg: #0d1b2a;
+  --nav-border: #1b2838;
+  --nav-profile-bg: rgba(99,102,241,0.15);
+  --nav-profile-border: rgba(99,102,241,0.4);
+  --nav-profile-text: #c7d2fe;
+  --nav-tab-text: #9ca3af;
+  --nav-tab-hover-text: #e0e0e0;
+  --nav-tab-hover-bg: rgba(255,255,255,0.05);
+  --nav-tab-active-text: #ffffff;
+  --nav-tab-active-bg: rgba(99,102,241,0.1);
+
+  /* Stat cards */
+  --stat-bg: #1e1e2e;
+  --stat-border: rgba(255,255,255,0.08);
+
+  /* Sidebar */
+  --sidebar-bg: #0f1225;
+  --sidebar-border: #1e2142;
+  --sidebar-text: #8b8fa8;
+  --sidebar-text-active: #818cf8;
+  --sidebar-item-active-bg: rgba(99, 102, 241, 0.15);
+  --sidebar-item-hover-bg: rgba(99, 102, 241, 0.08);
+
+  /* Escalation View */
+  --card-bg: #131630;
+  --card-border: #1e2142;
+}
+
+/* ===== Light Theme Tokens ===== */
+[data-theme="light"] {
+  --page-bg: #f5f5f5;
+  --page-text: #1a1a2e;
+  --page-text-muted: #4a4a4a;
+  --page-text-dim: #6b7280;
+  --surface-bg: #ffffff;
+  --surface-border: #e0e0e0;
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --input-text: #1a1a2e;
+  --modal-bg: #ffffff;
+  --modal-border: #3b82f6;
+  --btn-primary-bg: #4f46e5;
+  --btn-primary-text: #ffffff;
+  --btn-cancel-bg: #f3f4f6;
+  --btn-cancel-border: #d1d5db;
+  --btn-cancel-text: #374151;
+  --btn-edit-bg: rgba(79,70,229,0.08);
+  --btn-edit-border: rgba(79,70,229,0.3);
+  --btn-edit-text: #4f46e5;
+  --badge-green-bg: rgba(34,197,94,0.15);
+  --badge-green-text: #16a34a;
+  --badge-indigo-bg: rgba(79,70,229,0.12);
+  --badge-indigo-text: #4f46e5;
+  --badge-red-bg: rgba(239,68,68,0.1);
+  --badge-red-text: #dc2626;
+  --badge-yellow-bg: rgba(245,158,11,0.12);
+  --badge-yellow-text: #d97706;
+  --error-bg: rgba(239,68,68,0.08);
+  --error-border: rgba(239,68,68,0.3);
+  --error-text: #dc2626;
+  --success-bg: rgba(34,197,94,0.08);
+  --success-border: rgba(34,197,94,0.3);
+  --success-text: #16a34a;
+  --row-border: #f3f4f6;
+  --th-color: #6b7280;
+  --th-border: #e5e7eb;
+  --overlay-bg: rgba(0,0,0,0.4);
+
+  /* Aliases */
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a4a;
+  --surface-primary: #f9fafb;
+  --surface-secondary: #ffffff;
+  --border-color: #e5e7eb;
+
+  /* Mapa */
+  --mapa-bg: #f5f5f5;
+  --mapa-card-bg: #ffffff;
+  --mapa-border: #d1d5db;
+  --mapa-border-hover: #3b82f6;
+  --mapa-container-bg: #ffffff;
+  --mapa-chip-bg: rgba(59,130,246,0.08);
+  --mapa-chip-border: rgba(59,130,246,0.3);
+
+  /* Sidebar */
+  --sidebar-bg: #f8fafc;
+  --sidebar-border: #e2e8f0;
+  --sidebar-text: #64748b;
+  --sidebar-text-active: #4f46e5;
+  --sidebar-item-active-bg: rgba(79, 70, 229, 0.1);
+  --sidebar-item-hover-bg: rgba(79, 70, 229, 0.05);
+
+  /* Escalation View */
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --mapa-chip-text: #2563eb;
+  --mapa-search-bg: #ffffff;
+
+  /* Nav */
+  --nav-bg: #ffffff;
+  --nav-border: #e5e7eb;
+  --nav-profile-bg: rgba(79,70,229,0.08);
+  --nav-profile-border: rgba(79,70,229,0.3);
+  --nav-profile-text: #4f46e5;
+  --nav-tab-text: #6b7280;
+  --nav-tab-hover-text: #1f2937;
+  --nav-tab-hover-bg: rgba(0,0,0,0.04);
+  --nav-tab-active-text: #4f46e5;
+  --nav-tab-active-bg: rgba(79,70,229,0.08);
+
+  /* Stat cards */
+  --stat-bg: #ffffff;
+  --stat-border: #e5e7eb;
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -5,8 +179,8 @@
   width: 100vw;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #1a1a2e;
-  color: #e0e0e0;
+  background-color: var(--page-bg, #1a1a2e);
+  color: var(--page-text, #e0e0e0);
 }
 
 /* Navigation bar */
@@ -14,8 +188,8 @@
   display: flex;
   align-items: center;
   padding: 0 12px;
-  background-color: #0d1b2a;
-  border-bottom: 1px solid #1b2838;
+  background-color: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
   min-height: 44px;
   flex-shrink: 0;
   gap: 4px;
@@ -31,10 +205,10 @@
 
 .app__nav-profile {
   padding: 6px 12px;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.4);
+  background: var(--nav-profile-bg);
+  border: 1px solid var(--nav-profile-border);
   border-radius: 20px;
-  color: #c7d2fe;
+  color: var(--nav-profile-text);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -46,22 +220,8 @@
   background: rgba(99, 102, 241, 0.25);
 }
 
-.app__theme-toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-}
-
 .app__theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(99, 102, 241, 0.15);
 }
 
 /* Connection status */
@@ -70,10 +230,10 @@
   align-items: center;
   gap: 5px;
   font-size: 0.7rem;
-  color: #9ca3af;
+  color: var(--page-text-muted);
   padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-bg);
+  border: 1px solid var(--surface-border);
   border-radius: 20px;
   white-space: nowrap;
 }
@@ -124,7 +284,7 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #9ca3af;
+  color: var(--nav-tab-text);
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
@@ -133,14 +293,14 @@
 }
 
 .app__nav-tab:hover {
-  color: #e0e0e0;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--nav-tab-hover-text);
+  background-color: var(--nav-tab-hover-bg);
 }
 
 .app__nav-tab--active {
-  color: #ffffff;
-  border-bottom-color: #6366f1;
-  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--nav-tab-active-text);
+  border-bottom-color: var(--btn-primary-bg);
+  background-color: var(--nav-tab-active-bg);
 }
 
 .app__nav-tab-icon {
@@ -169,107 +329,33 @@
   flex-direction: column;
 }
 
-/* Theme toggle button */
 .app__theme-toggle {
   background: none;
-  border: 1px solid #0f3460;
-  border-radius: 4px;
-  padding: 4px 8px;
+  border: 1px solid var(--surface-border);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  transition: all 0.2s;
 }
 
-/* Light theme overrides */
-[data-theme="light"] .app {
-  background-color: #f5f5f5;
-  color: #1a1a2e;
+.app__theme-toggle:hover {
+  background: rgba(99, 102, 241, 0.1);
 }
 
-[data-theme="light"] .app__nav {
-  background-color: #ffffff;
-  border-bottom-color: #e0e0e0;
+/* Light theme overrides — supplemental */
+[data-theme="light"] .app__nav-profile:hover {
+  background: rgba(79, 70, 229, 0.15);
 }
 
-[data-theme="light"] .app__nav-title {
-  color: #1a1a2e;
+[data-theme="light"] .app__theme-toggle {
+  border-color: #d1d5db;
 }
 
-[data-theme="light"] .app__nav-tab {
-  color: #4a4a4a;
-}
-
-[data-theme="light"] .app__nav-tab--active {
-  color: #4a90d9;
-  border-bottom-color: #4a90d9;
-}
-
-[data-theme="light"] .dashboard {
-  background-color: #f5f5f5;
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .dashboard-header {
-  background-color: #ffffff;
-  border-bottom-color: #e0e0e0;
-}
-
-[data-theme="light"] .dashboard-header h1 {
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .dashboard-clock {
-  color: #4a4a4a;
-}
-
-[data-theme="light"] .monitor-card {
-  background-color: #ffffff;
-  border-color: #e0e0e0;
-}
-
-[data-theme="light"] .monitor-card__name {
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .area-bar {
-  background-color: #ffffff;
-  border-top-color: #e0e0e0;
-}
-
-[data-theme="light"] .area-bar__card {
-  background-color: #f9f9f9;
-  border-color: #e0e0e0;
-}
-
-[data-theme="light"] .area-bar__area-name {
-  color: #2563eb;
-}
-
-[data-theme="light"] .area-bar__person {
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .dashboard-search__input {
-  background-color: #ffffff;
-  border-color: #e0e0e0;
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .monitor-modal {
-  background-color: #ffffff;
-  border-color: #e0e0e0;
-}
-
-[data-theme="light"] .monitor-modal__title {
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .monitor-modal__section span {
-  color: #1a1a2e;
-}
-
-[data-theme="light"] .monitor-modal__code,
-[data-theme="light"] .monitor-modal__template {
-  background-color: #f5f5f5;
-  border-color: #e0e0e0;
-  color: #1a1a2e;
+[data-theme="light"] .app__theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
 }

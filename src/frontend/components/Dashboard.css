@@ -5,8 +5,8 @@
   width: 100%;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #1a1a2e;
-  color: #e0e0e0;
+  background-color: var(--page-bg);
+  color: var(--page-text);
 }
 
 /* Header */
@@ -15,8 +15,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background-color: #16213e;
-  border-bottom: 1px solid #0f3460;
+  background-color: var(--surface-bg);
+  border-bottom: 1px solid var(--surface-border);
   min-height: 50px;
 }
 
@@ -24,12 +24,12 @@
   margin: 0;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--page-text);
 }
 
 .dashboard-clock {
   font-size: 0.95rem;
-  color: #b0b0b0;
+  color: var(--page-text-muted);
   font-weight: 500;
 }
 
@@ -67,7 +67,7 @@
   50% { opacity: 0.4; }
 }
 
-/* Monitor Grid Area — main section */
+/* Monitor Grid Area */
 .monitor-grid-area {
   flex: 1;
   display: flex;
@@ -79,7 +79,7 @@
 .monitor-grid-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #ff1744;
+  color: var(--badge-red-text);
   margin-bottom: 12px;
 }
 
@@ -97,23 +97,23 @@
   justify-content: center;
   flex: 1;
   gap: 8px;
-  color: #6b7280;
+  color: var(--page-text-dim);
   font-size: 1rem;
 }
 
 .monitor-grid-empty.monitor-grid-ok {
-  color: #4caf50;
+  color: var(--badge-green-text);
 }
 
 .monitor-grid-hint {
   font-size: 0.8rem;
-  color: #6b7280 !important;
+  color: var(--page-text-dim) !important;
 }
 
-/* Individual monitor card */
+/* Monitor card */
 .monitor-card {
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: var(--surface-bg);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 14px;
   display: flex;
@@ -125,12 +125,12 @@
 
 .monitor-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .monitor-card--alert {
-  border-color: #ff1744;
-  background-color: rgba(255, 23, 68, 0.08);
+  border-color: var(--badge-red-text);
+  background-color: var(--badge-red-bg);
   box-shadow: 0 0 10px rgba(255, 23, 68, 0.2);
 }
 
@@ -145,22 +145,22 @@
 .monitor-card__name {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--page-text);
   word-break: break-word;
 }
 
 .monitor-card__team {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--page-text-dim);
 }
 
-/* Area Bar — bottom section */
+/* Area Bar */
 .area-bar {
   display: flex;
   gap: 8px;
   padding: 12px 20px;
-  background-color: #16213e;
-  border-top: 1px solid #0f3460;
+  background-color: var(--surface-bg);
+  border-top: 1px solid var(--surface-border);
   overflow-x: auto;
   min-height: 90px;
   align-items: stretch;
@@ -171,7 +171,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  color: #6b7280;
+  color: var(--page-text-dim);
   font-size: 0.85rem;
 }
 
@@ -179,8 +179,8 @@
   flex: 0 0 auto;
   min-width: 160px;
   max-width: 220px;
-  background-color: #1a1a2e;
-  border: 1px solid #0f3460;
+  background-color: var(--input-bg);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   padding: 10px 14px;
   display: flex;
@@ -189,14 +189,14 @@
 }
 
 .area-bar__card--active {
-  border-color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.05);
+  border-color: var(--badge-green-text);
+  background-color: var(--badge-green-bg);
 }
 
 .area-bar__area-name {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #4a90d9;
+  color: var(--badge-indigo-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -217,51 +217,51 @@
 
 .area-bar__person {
   font-size: 0.8rem;
-  color: #e0e0e0;
+  color: var(--page-text);
   font-weight: 500;
 }
 
 .area-bar__time {
   font-size: 0.7rem;
-  color: #6b7280;
+  color: var(--page-text-dim);
 }
 
 .area-bar__no-plantonista {
   font-size: 0.8rem;
-  color: #ffab00;
+  color: var(--badge-yellow-text);
 }
 
 /* Search bar */
 .dashboard-search {
   padding: 8px 20px;
-  background-color: #16213e;
-  border-bottom: 1px solid #0f3460;
+  background-color: var(--surface-bg);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .dashboard-search__input {
   width: 100%;
   max-width: 400px;
   padding: 8px 12px;
-  background-color: #1a1a2e;
-  border: 1px solid #0f3460;
-  border-radius: 4px;
-  color: #e0e0e0;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--input-text);
   font-size: 0.9rem;
   outline: none;
 }
 
 .dashboard-search__input:focus {
-  border-color: #4a90d9;
+  border-color: var(--btn-primary-bg);
 }
 
 .dashboard-search__input::placeholder {
-  color: #6b7280;
+  color: var(--page-text-dim);
 }
 
 /* Area card without schedule */
 .area-bar__card--no-schedule {
-  border-color: #ffab00;
-  background-color: rgba(255, 171, 0, 0.05);
+  border-color: var(--badge-yellow-text);
+  background-color: var(--badge-yellow-bg);
 }
 
 .area-bar__team-fallback {
@@ -272,7 +272,7 @@
 
 .area-bar__no-schedule-label {
   font-size: 0.7rem;
-  color: #ffab00;
+  color: var(--badge-yellow-text);
   font-weight: 600;
 }
 
@@ -284,11 +284,11 @@
 
 .area-bar__team-member {
   font-size: 0.7rem;
-  color: #b0b0b0;
+  color: var(--page-text-muted);
 }
 
 .area-bar__team-more {
   font-size: 0.65rem;
-  color: #6b7280;
+  color: var(--page-text-dim);
   font-style: italic;
 }

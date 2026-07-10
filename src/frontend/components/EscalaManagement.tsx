@@ -1,17 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useCommandCenterStore } from '../store/command-center-store';
-import './EscalaManagement.css';
-
 import type { Area, Periodo, Escala, User } from '../../shared/types';
 
 /**
  * EscalaManagement component — CRUD screen for managing Escalas.
- * Accessible by users with 'Adm' or 'Responsavel' profile.
- * Provides listing, creation, editing, and deletion of escalas.
- * Escalas link an Area + Periodo + Plantonista (Tb_Escalas).
- * Filters escalas by the user's selected areas.
- *
- * Validates: Requisito Documento — Cadastro de Escala
+ * Layout padronizado conforme tela "Gestão de Usuários".
  */
 export function EscalaManagement(): React.ReactElement {
   const user = useCommandCenterStore((state) => state.user);
@@ -25,6 +18,7 @@ export function EscalaManagement(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -39,34 +33,27 @@ export function EscalaManagement(): React.ReactElement {
   const [formPeriodoCodigo, setFormPeriodoCodigo] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
-  // Check access: Adm or Responsavel
   if (!user || (user.perfil !== 'Adm' && user.perfil !== 'Responsavel')) {
     return (
-      <div className="escala-management">
-        <div className="escala-management__denied" role="alert">
+      <div style={{ padding: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', padding: '4rem', color: '#ef4444' }} role="alert">
           Acesso restrito. Apenas administradores e responsáveis podem gerenciar escalas.
         </div>
       </div>
     );
   }
 
-  const authHeaders = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
+  const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
-  // Fetch escalas filtered by selected areas
   const fetchEscalas = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
       let allEscalas: Escala[] = [];
-
-      if (selectedAreas.length > 0) {
+      // Admin always fetches all escalas; others filter by selectedAreas
+      const shouldFilterByArea = user?.perfil !== 'Adm' && selectedAreas.length > 0;
+      if (shouldFilterByArea) {
         const promises = selectedAreas.map(async (areaCodigo) => {
-          const response = await fetch(`/api/escalas?areaCodigo=${encodeURIComponent(areaCodigo)}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await fetch(`/api/escalas?areaCodigo=${encodeURIComponent(areaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
           if (!response.ok) throw new Error('Erro ao carregar escalas.');
           const data = await response.json();
           return (data.escalas || data || []) as Escala[];
@@ -74,119 +61,71 @@ export function EscalaManagement(): React.ReactElement {
         const results = await Promise.all(promises);
         allEscalas = results.flat();
       } else {
-        const response = await fetch('/api/escalas', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch('/api/escalas', { headers: { Authorization: `Bearer ${token}` } });
         if (!response.ok) throw new Error('Erro ao carregar escalas.');
         const data = await response.json();
         allEscalas = data.escalas || data || [];
       }
-
       setEscalas(allEscalas);
-    } catch {
-      setError('Erro ao carregar escalas.');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, selectedAreas]);
+    } catch { setError('Erro ao carregar escalas.'); }
+    finally { setLoading(false); }
+  }, [token, selectedAreas, user?.perfil]);
 
-  // Fetch areas for dropdown
   const fetchAreas = useCallback(async () => {
     try {
-      const response = await fetch('/api/areas', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch('/api/areas', { headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) return;
       const data = await response.json();
       setAreas(data.areas || data || []);
-    } catch {
-      // Silently fail — areas dropdown will be empty
-    }
+    } catch {}
   }, [token]);
 
-  // Fetch periodos for a given area
-  const fetchPeriodos = useCallback(async (areaCodigo: string) => {
-    if (!areaCodigo) {
-      setPeriodos([]);
-      return;
-    }
+  const fetchPeriodos = useCallback(async (areaCodigo?: string) => {
     try {
-      const response = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(areaCodigo)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const url = areaCodigo ? `/api/periodos?areaCodigo=${encodeURIComponent(areaCodigo)}` : '/api/periodos';
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) return;
       const data = await response.json();
       setPeriodos(data.periodos || data || []);
-    } catch {
-      setPeriodos([]);
-    }
+    } catch { setPeriodos([]); }
   }, [token]);
 
-  // Fetch plantonistas (users with perfil = Plantonista)
   const fetchPlantonistas = useCallback(async () => {
     try {
-      const response = await fetch('/api/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
       if (!response.ok) return;
       const data = await response.json();
       const allUsers: User[] = data.users || data || [];
       setPlantonistas(allUsers.filter((u) => u.perfil === 'Plantonista'));
-    } catch {
-      setPlantonistas([]);
-    }
+    } catch { setPlantonistas([]); }
   }, [token]);
 
-  useEffect(() => {
-    fetchEscalas();
-    fetchAreas();
-    fetchPlantonistas();
-  }, [fetchEscalas, fetchAreas, fetchPlantonistas]);
+  useEffect(() => { fetchEscalas(); fetchAreas(); fetchPlantonistas(); fetchPeriodos(); }, [fetchEscalas, fetchAreas, fetchPlantonistas, fetchPeriodos]);
 
-  // When form area changes, fetch periodos for that area
   useEffect(() => {
-    if (formAreaCodigo) {
-      fetchPeriodos(formAreaCodigo);
-    } else {
-      setPeriodos([]);
-    }
+    if (formAreaCodigo) { fetchPeriodos(formAreaCodigo); }
   }, [formAreaCodigo, fetchPeriodos]);
 
-  // Get area name by codigo
-  const getAreaNome = useCallback(
-    (areaCodigo: string): string => {
-      const area = areas.find((a) => a.codigo === areaCodigo);
-      return area ? area.nome : areaCodigo;
-    },
-    [areas]
-  );
+  const getAreaNome = useCallback((areaCodigo: string): string => {
+    const area = areas.find((a) => a.codigo === areaCodigo);
+    return area ? area.nome : areaCodigo;
+  }, [areas]);
 
-  // Get periodo display (data + horarios) by codigo
-  const getPeriodoDisplay = useCallback(
-    (periodoCodigo: string): string => {
-      const periodo = periodos.find((p) => p.codigo === periodoCodigo);
-      if (periodo) return `${periodo.data} (${periodo.horarios})`;
-      // Search in escalas context — the periodo might not be loaded for current area filter
-      return periodoCodigo;
-    },
-    [periodos]
-  );
+  const getPeriodoDisplay = useCallback((periodoCodigo: string): string => {
+    const periodo = periodos.find((p) => p.codigo === periodoCodigo);
+    if (periodo) return `${periodo.data} (${periodo.horarios})`;
+    return periodoCodigo;
+  }, [periodos]);
 
-  // Get plantonista name by codigo
-  const getPlantonistaNome = useCallback(
-    (usuarioCodigo: string): string => {
-      const plantonista = plantonistas.find((p) => p.codigo === usuarioCodigo);
-      return plantonista ? plantonista.nome : usuarioCodigo;
-    },
-    [plantonistas]
-  );
+  const getPlantonistaNome = useCallback((usuarioCodigo: string): string => {
+    const plantonista = plantonistas.find((p) => p.codigo === usuarioCodigo);
+    return plantonista ? plantonista.nome : usuarioCodigo;
+  }, [plantonistas]);
 
-  // Filter plantonistas by selected area in form
   const filteredPlantonistas = formAreaCodigo
     ? plantonistas.filter((p) => p.areaCodigo === formAreaCodigo || !p.areaCodigo)
     : plantonistas;
 
-  // Open form for new escala
   const handleNew = useCallback(() => {
     setEditingEscala(null);
     setFormAreaCodigo(''); setFormUsuarioCodigo(''); setFormDia(''); setFormPeriodoCodigo('');
@@ -195,7 +134,6 @@ export function EscalaManagement(): React.ReactElement {
     setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
-  // Open form for editing
   const handleEdit = useCallback((escala: Escala) => {
     setEditingEscala(escala);
     setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
@@ -204,227 +142,163 @@ export function EscalaManagement(): React.ReactElement {
     setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
-  // Close form
-  const handleCancel = useCallback(() => {
-    setShowForm(false);
-    setEditingEscala(null);
-  }, []);
+  const handleCancel = useCallback(() => { setShowForm(false); setEditingEscala(null); }, []);
 
-  // Save (create or update)
-  const handleSave = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError(null);
-      setSuccess(null);
+  const handleSave = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null); setSuccess(null);
+    if (!formAreaCodigo) { setError('Área é obrigatória.'); return; }
+    if (!formUsuarioCodigo) { setError('Plantonista é obrigatório.'); return; }
+    if (formEntradas.length === 0) { setError('Adicione pelo menos uma data.'); return; }
 
-      if (!formAreaCodigo) { setError('Área é obrigatória.'); return; }
-      if (!formUsuarioCodigo) { setError('Plantonista é obrigatório.'); return; }
-      if (formEntradas.length === 0) { setError('Adicione pelo menos uma data.'); return; }
-
-      setFormLoading(true);
-
-      try {
-        // Create one escala per entry (date+horario)
-        for (const entrada of formEntradas) {
-          // Create periodo for this date
-          const periodoRes = await fetch('/api/periodos', {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify({ data: entrada.data, horarios: entrada.horario, areaCodigo: formAreaCodigo }),
-          });
-
-          let periodoCodigo = '';
-          if (periodoRes.ok) {
-            const periodoData = await periodoRes.json();
-            periodoCodigo = periodoData.codigo;
-          } else {
-            // Try to find existing
-            const existingRes = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(formAreaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
-            if (existingRes.ok) {
-              const existingData = await existingRes.json();
-              const perList = existingData.periodos || existingData || [];
-              const match = perList.find((p: any) => p.data === entrada.data);
-              if (match) periodoCodigo = match.codigo;
-            }
-          }
-
-          if (!periodoCodigo) continue;
-
-          const codigo = `ESC-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
-          await fetch('/api/escalas', {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify({ codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
-          });
-        }
-
-        setSuccess('Escala criada!');
-        setShowForm(false); setEditingEscala(null); await fetchEscalas();
-      } catch { setError('Erro ao conectar.'); }
-      finally { setFormLoading(false); }
-    },
-    [formAreaCodigo, formUsuarioCodigo, formDia, formPeriodoCodigo, editingEscala, authHeaders, fetchEscalas, token]
-  );
-
-  // Delete escala
-  const handleDelete = useCallback(
-    async (escala: Escala) => {
-      if (!confirm(`Deseja deletar a escala "${escala.codigo}"?`)) {
-        return;
-      }
-
-      setError(null);
-      setSuccess(null);
-
-      try {
-        const response = await fetch(`/api/escalas/${escala.id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
+    setFormLoading(true);
+    try {
+      for (const entrada of formEntradas) {
+        const periodoRes = await fetch('/api/periodos', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ data: entrada.data, horarios: entrada.horario, areaCodigo: formAreaCodigo }),
         });
 
-        if (!response.ok) {
-          const data = await response.json();
-          setError(data.error || 'Erro ao deletar escala.');
-          return;
+        let periodoCodigo = '';
+        if (periodoRes.ok) {
+          const periodoData = await periodoRes.json();
+          periodoCodigo = periodoData.codigo;
+        } else {
+          const existingRes = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(formAreaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
+          if (existingRes.ok) {
+            const existingData = await existingRes.json();
+            const perList = existingData.periodos || existingData || [];
+            const match = perList.find((p: any) => p.data === entrada.data);
+            if (match) periodoCodigo = match.codigo;
+          }
         }
+        if (!periodoCodigo) continue;
 
-        setSuccess('Escala deletada com sucesso!');
-        await fetchEscalas();
-      } catch {
-        setError('Erro ao conectar com o servidor.');
+        const codigo = `ESC-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+        await fetch('/api/escalas', {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
+        });
       }
-    },
-    [token, fetchEscalas]
-  );
+      setSuccess('Escala criada!');
+      setShowForm(false); setEditingEscala(null); await fetchEscalas();
+    } catch { setError('Erro ao conectar.'); }
+    finally { setFormLoading(false); }
+  }, [formAreaCodigo, formUsuarioCodigo, formEntradas, editingEscala, authHeaders, fetchEscalas, token]);
+
+  const handleDelete = useCallback(async (escala: Escala) => {
+    if (!confirm(`Deseja deletar a escala "${escala.codigo}"?`)) return;
+    setError(null); setSuccess(null);
+    try {
+      const response = await fetch(`/api/escalas/${escala.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!response.ok) { const data = await response.json(); setError(data.error || 'Erro ao deletar escala.'); return; }
+      setSuccess('Escala deletada com sucesso!'); await fetchEscalas();
+    } catch { setError('Erro ao conectar com o servidor.'); }
+  }, [token, fetchEscalas]);
+
+  const filtered = escalas.filter(esc => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return esc.codigo.toLowerCase().includes(s) || getPlantonistaNome(esc.usuarioCodigo).toLowerCase().includes(s) || getAreaNome(esc.areaCodigo).toLowerCase().includes(s);
+  });
 
   return (
-    <div className="escala-management">
-      <h1 className="escala-management__title">Cadastro de Escalas</h1>
+    <div style={{ padding: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--page-text)', marginBottom: '1rem' }}>Cadastro de Escalas</h1>
 
-      {error && (
-        <div className="escala-management__error" role="alert">
-          {error}
-        </div>
-      )}
+      {error && <div style={{ background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{error}</div>}
+      {success && <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{success}</div>}
 
-      {success && (
-        <div className="escala-management__success" role="status">
-          {success}
-        </div>
-      )}
-
-      <div className="escala-management__actions">
-        <button
-          type="button"
-          className="escala-management__btn escala-management__btn--primary"
-          onClick={handleNew}
-        >
-          Nova Escala
-        </button>
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'center' }}>
+        <input style={{ flex: 1, background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem' }} placeholder="🔍 Buscar por código, plantonista ou área..." value={search} onChange={e => setSearch(e.target.value)} />
+        <button onClick={handleNew} style={{ background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>+ Nova Escala</button>
       </div>
 
-      <div className="escala-management__table-container">
-        <table className="escala-management__table">
-          <thead>
+      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+          <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
-              <th>Código</th>
-              <th>Período</th>
-              <th>Plantonista</th>
-              <th>Área</th>
-              <th>Ações</th>
+              <th style={thStyle}>Código</th>
+              <th style={thStyle}>Plantonista</th>
+              <th style={thStyle}>Área</th>
+              <th style={thStyle}>Período</th>
+              <th style={thStyle}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {escalas.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="escala-management__empty">
-                  {loading ? 'Carregando...' : 'Nenhuma escala cadastrada.'}
+            {filtered.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>{loading ? 'Carregando...' : 'Nenhuma escala cadastrada.'}</td></tr>
+            ) : filtered.map(escala => (
+              <tr key={escala.id} style={{ borderBottom: '1px solid var(--row-border)' }}>
+                <td style={tdStyle}><span style={{ background: 'var(--badge-indigo-bg)', color: 'var(--badge-indigo-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem' }}>{escala.codigo}</span></td>
+                <td style={tdStyle}>{getPlantonistaNome(escala.usuarioCodigo)}</td>
+                <td style={tdStyle}>{getAreaNome(escala.areaCodigo)}</td>
+                <td style={tdStyle}>{getPeriodoDisplay(escala.periodoCodigo)}</td>
+                <td style={tdStyle}>
+                  <button onClick={() => handleEdit(escala)} style={editBtnStyle}>Editar</button>
                 </td>
               </tr>
-            ) : (
-              escalas.map((escala) => (
-                <tr key={escala.id}>
-                  <td>{escala.codigo}</td>
-                  <td>{getPeriodoDisplay(escala.periodoCodigo)}</td>
-                  <td>{getPlantonistaNome(escala.usuarioCodigo)}</td>
-                  <td>{getAreaNome(escala.areaCodigo)}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="escala-management__btn escala-management__btn--edit"
-                      onClick={() => handleEdit(escala)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="escala-management__btn escala-management__btn--delete"
-                      onClick={() => handleDelete(escala)}
-                    >
-                      Deletar
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
+      {/* Modal de Criação/Edição */}
       {showForm && (
-        <div className="escala-management__form-overlay">
-          <div className="escala-management__form-card">
-            <h2 className="escala-management__form-title">
-              {editingEscala ? 'Editar Escala' : 'Nova Escala'}
-            </h2>
-            <form className="escala-management__form" onSubmit={handleSave}>
-
-              <div className="escala-management__field">
-                <label className="escala-management__label">Area</label>
-                <select className="escala-management__select" value={formAreaCodigo} onChange={(e) => { setFormAreaCodigo(e.target.value); setFormUsuarioCodigo(''); setFormPeriodoCodigo(''); setFormEntradas([]); }} required>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={handleCancel}>
+          <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--modal-border)', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '500px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>{editingEscala ? 'Editar Escala' : 'Nova Escala'}</h2>
+            <form onSubmit={handleSave}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Área *</label>
+                <select style={inputStyle} value={formAreaCodigo} onChange={(e) => { setFormAreaCodigo(e.target.value); setFormUsuarioCodigo(''); setFormPeriodoCodigo(''); setFormEntradas([]); }} required>
                   <option value="">Selecione uma área</option>
                   {areas.map((area) => (<option key={area.id} value={area.codigo}>{area.nome}</option>))}
                 </select>
               </div>
 
-              <div className="escala-management__field">
-                <label className="escala-management__label">Plantonista</label>
-                <select className="escala-management__select" value={formUsuarioCodigo} onChange={(e) => setFormUsuarioCodigo(e.target.value)} required disabled={!formAreaCodigo}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Plantonista *</label>
+                <select style={inputStyle} value={formUsuarioCodigo} onChange={(e) => setFormUsuarioCodigo(e.target.value)} required disabled={!formAreaCodigo}>
                   <option value="">Selecione o plantonista</option>
                   {filteredPlantonistas.map((p) => (<option key={p.id} value={p.codigo}>{p.nome}</option>))}
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="escala-management__field">
-                  <label className="escala-management__label">Mês</label>
-                  <select className="escala-management__select" value={formMes} onChange={(e) => setFormMes(e.target.value)}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Mês</label>
+                  <select style={inputStyle} value={formMes} onChange={(e) => setFormMes(e.target.value)}>
                     <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
                     <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
                     <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
                     <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
                   </select>
                 </div>
-                <div className="escala-management__field">
-                  <label className="escala-management__label">Ano</label>
-                  <select className="escala-management__select" value={formAno} onChange={(e) => setFormAno(e.target.value)}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Ano</label>
+                  <select style={inputStyle} value={formAno} onChange={(e) => setFormAno(e.target.value)}>
                     <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
                   </select>
                 </div>
               </div>
 
-              {/* Grid: Horário + Data (adicionar múltiplos) */}
-              <div className="escala-management__field">
-                <label className="escala-management__label">Horários e Datas</label>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>Horários e Datas</label>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <select className="escala-management__select" value={formHorario} onChange={(e) => setFormHorario(e.target.value)} style={{ flex: '1 1 auto', minWidth: '150px' }}>
-                    <option value="">Selecione o horário</option>
-                    {periodos.length > 0
-                      ? [...new Set(periodos.map(p => p.horarios))].map((h, i) => (<option key={i} value={h}>{h}</option>))
-                      : <option value="24hs">24hs</option>
-                    }
+                  <select style={{ ...inputStyle, flex: '1 1 auto', minWidth: '150px' }} value={formHorario} onChange={(e) => setFormHorario(e.target.value)}>
+                    <option value="">Horário</option>
+                    <option value="24hs">24hs</option>
+                    <option value="07:00 às 17:00">07:00 às 17:00</option>
+                    <option value="08:00 às 18:00">08:00 às 18:00</option>
+                    <option value="18:00 às 06:00">18:00 às 06:00</option>
+                    <option value="18:00 às 08:00">18:00 às 08:00</option>
+                    <option value="08:00 às 06:00">08:00 às 06:00</option>
+                    <option value="08:00 às 08:00">08:00 às 08:00</option>
+                    <option value="00:00 às 23:59">00:00 às 23:59</option>
+                    {periodos.length > 0 && [...new Set(periodos.map(p => p.horarios))].filter(h => !['24hs','07:00 às 17:00','08:00 às 18:00','18:00 às 06:00','18:00 às 08:00','08:00 às 06:00','08:00 às 08:00','00:00 às 23:59'].includes(h)).map((h, i) => (<option key={`extra-${i}`} value={h}>{h}</option>))}
                   </select>
-                  <select className="escala-management__select" value={formDia} onChange={(e) => setFormDia(e.target.value)} style={{ flex: '1 1 auto', minWidth: '120px' }}>
+                  <select style={{ ...inputStyle, flex: '1 1 auto', minWidth: '120px' }} value={formDia} onChange={(e) => setFormDia(e.target.value)}>
                     <option value="">Dia</option>
                     {Array.from({ length: new Date(Number(formAno), Number(formMes), 0).getDate() }, (_, i) => {
                       const day = i + 1;
@@ -433,7 +307,7 @@ export function EscalaManagement(): React.ReactElement {
                       return (<option key={day} value={dateStr}>{String(day).padStart(2, '0')} - {weekday}</option>);
                     })}
                   </select>
-                  <button type="button" className="escala-management__btn escala-management__btn--primary" style={{ padding: '0.5rem 0.75rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                  <button type="button" style={{ background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', padding: '0.5rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                     onClick={() => {
                       if (formDia && formHorario && !formEntradas.find(x => x.data === formDia)) {
                         setFormEntradas([...formEntradas, { horario: formHorario, data: formDia }].sort((a, b) => a.data.localeCompare(b.data)));
@@ -445,24 +319,22 @@ export function EscalaManagement(): React.ReactElement {
                 {formEntradas.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                     {formEntradas.map((item) => (
-                      <div key={item.data} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
-                        <span style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 500 }}>🕐 {item.horario}</span>
-                        <span style={{ fontSize: '0.85rem', color: '#e4e4e7', margin: '0 0.5rem' }}>|</span>
-                        <span style={{ fontSize: '0.85rem', color: '#e4e4e7' }}>📅 {item.data}</span>
-                        <button type="button" onClick={() => setFormEntradas(formEntradas.filter(x => x.data !== item.data))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: 0, marginLeft: '0.5rem' }}>×</button>
+                      <div key={item.data} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--badge-indigo-bg)', border: '1px solid var(--btn-edit-border)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--badge-indigo-text)', fontWeight: 500 }}>🕐 {item.horario}</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--page-text)', margin: '0 0.5rem' }}>|</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--page-text)' }}>📅 {item.data}</span>
+                        <button type="button" onClick={() => setFormEntradas(formEntradas.filter(x => x.data !== item.data))} style={{ background: 'none', border: 'none', color: 'var(--error-text)', cursor: 'pointer', fontSize: '1rem', padding: 0, marginLeft: '0.5rem' }}>×</button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {error && (<div className="escala-management__error" role="alert">{error}</div>)}
+              {error && <div style={{ color: 'var(--error-text)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</div>}
 
-              <div className="escala-management__form-actions">
-                <button type="button" className="escala-management__btn escala-management__btn--cancel" onClick={handleCancel}>Cancelar</button>
-                <button type="submit" className="escala-management__btn escala-management__btn--primary" disabled={formLoading || !formAreaCodigo || !formUsuarioCodigo || formEntradas.length === 0}>
-                  {formLoading ? 'Salvando...' : 'Salvar'}
-                </button>
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" onClick={handleCancel} style={{ flex: 1, padding: '0.6rem', background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', color: 'var(--btn-cancel-text)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" disabled={formLoading || !formAreaCodigo || !formUsuarioCodigo || formEntradas.length === 0} style={{ flex: 1, padding: '0.6rem', background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', borderRadius: '8px', cursor: 'pointer', opacity: formLoading ? 0.5 : 1 }}>{formLoading ? 'Salvando...' : 'Salvar'}</button>
               </div>
             </form>
           </div>
@@ -471,5 +343,12 @@ export function EscalaManagement(): React.ReactElement {
     </div>
   );
 }
+
+const thStyle: React.CSSProperties = { textAlign: 'left', padding: '0.6rem 0.75rem', fontWeight: 600, color: 'var(--th-color)', textTransform: 'uppercase', fontSize: '0.65rem', borderBottom: '1px solid var(--th-border)' };
+const tdStyle: React.CSSProperties = { padding: '0.5rem 0.75rem', color: 'var(--page-text)' };
+const editBtnStyle: React.CSSProperties = { background: 'var(--btn-edit-bg)', border: '1px solid var(--btn-edit-border)', color: 'var(--btn-edit-text)', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' };
+const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '0.3rem', marginBottom: '0.75rem' };
+const labelStyle: React.CSSProperties = { fontSize: '0.7rem', fontWeight: 600, color: 'var(--page-text-muted)', textTransform: 'uppercase' };
+const inputStyle: React.CSSProperties = { background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.6rem', borderRadius: '6px', fontSize: '0.85rem' };
 
 export default EscalaManagement;

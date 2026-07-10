@@ -1,10 +1,12 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useCommandCenterStore } from './store/command-center-store';
 import { Dashboard } from './components/Dashboard';
 import { CSVImport } from './components/CSVImport';
 import { IncidentHistory } from './components/IncidentHistory';
 import { MonitorMapping } from './components/MonitorMapping';
+import { Sidebar } from './components/Sidebar';
+import { EscalationView } from './components/EscalationView';
 import { EscalationChainConfig } from './components/EscalationChainConfig';
 import { AreaManagement } from './components/AreaManagement';
 import { PlantonistManagement } from './components/PlantonistManagement';
@@ -26,7 +28,7 @@ import type { AppView } from '../shared/types';
 /**
  * Main navigation views accessible once authenticated.
  */
-type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'horario-management' | 'problema-management' | 'team-management' | 'user-management' | 'relatorio-contato';
+type AuthenticatedView = 'dashboard' | 'csv-import' | 'incident-history' | 'monitor-mapping' | 'escalation-config' | 'area-management' | 'plantonist-management' | 'periodo-management' | 'escala-management' | 'escalation-view' | 'horario-management' | 'problema-management' | 'team-management' | 'user-management' | 'relatorio-contato';
 
 interface NavItem {
   id: AuthenticatedView;
@@ -87,7 +89,7 @@ export function App(): React.ReactElement {
 }
 
 /**
- * Authenticated portion of the app with WebSocket and navigation.
+ * Authenticated portion of the app with WebSocket and sidebar navigation.
  */
 function AuthenticatedApp({
   currentView,
@@ -96,273 +98,57 @@ function AuthenticatedApp({
   currentView: AppView;
   setCurrentView: (view: AppView) => void;
 }): React.ReactElement {
-  // Initialize WebSocket connection at the app level
   useWebSocket();
 
   const teams = useCommandCenterStore((state) => state.teams);
-  const activeIncidents = useCommandCenterStore((state) => state.activeIncidents);
   const connectionStatus = useCommandCenterStore((state) => state.connectionStatus);
-  const logout = useCommandCenterStore((state) => state.logout);
   const userPerfil = useCommandCenterStore((state) => state.user?.perfil);
 
-  // Theme toggle
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
-  });
+  const [clock, setClock] = useState('');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  }, []);
-
-  // Build nav items per profile
-  const navItems = (() => {
-    if (userPerfil === 'Adm') return [
-      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
-      { id: 'csv-import' as AuthenticatedView, label: 'Importar', icon: '' },
-      { id: 'area-management' as AuthenticatedView, label: 'Áreas', icon: '' },
-      { id: 'user-management' as AuthenticatedView, label: 'Usuários', icon: '' },
-      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
-      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
-      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
-      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
-      { id: 'relatorio-contato' as AuthenticatedView, label: 'Relatório', icon: '' },
-    ];
-    if (userPerfil === 'Responsavel') return [
-      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
-      { id: 'csv-import' as AuthenticatedView, label: 'Exportar', icon: '' },
-      { id: 'user-management' as AuthenticatedView, label: 'Usuários', icon: '' },
-      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
-      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
-      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
-      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
-      { id: 'relatorio-contato' as AuthenticatedView, label: 'Relatório', icon: '' },
-    ];
-    if (userPerfil === 'Plantonista') return [
-      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
-      { id: 'escala-management' as AuthenticatedView, label: 'Minha Escala', icon: '' },
-    ];
-    if (userPerfil === 'Consultor') return [
-      { id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' },
-      { id: 'csv-import' as AuthenticatedView, label: 'Exportar', icon: '' },
-      { id: 'plantonist-management' as AuthenticatedView, label: 'Plantonistas', icon: '' },
-      { id: 'escala-management' as AuthenticatedView, label: 'Escalas', icon: '' },
-      { id: 'horario-management' as AuthenticatedView, label: 'Horários', icon: '' },
-      { id: 'problema-management' as AuthenticatedView, label: 'Problemas', icon: '' },
-    ];
-    return [{ id: 'monitor-mapping' as AuthenticatedView, label: 'Mapa', icon: '' }];
-  })();
-
-  const handleNavClick = useCallback((view: AuthenticatedView) => {
-    setCurrentView(view);
-  }, [setCurrentView]);
-
-  const handleAcknowledge = useCallback(async (incidentId: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`/api/incidents/${incidentId}/acknowledge`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-    } catch {
-      // Error handling silently — store will be updated via WebSocket event
+    function tick() {
+      setClock(new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     }
+    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
   }, []);
+
+  // Theme
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark');
+  useEffect(() => { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); }, [theme]);
 
   return (
-    <div className="app">
-      <nav className="app__nav" role="navigation" aria-label="Navegação principal">
-        <div className="app__nav-left">
-          <button className="app__nav-profile" onClick={logout} title="Clique para sair">
-            Perfil do Usuário
-          </button>
-          <ConnectionIndicator status={connectionStatus} />
-          <button className="app__theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
+    <div className="app-layout">
+      <Sidebar currentView={currentView} onNavigate={(v) => setCurrentView(v)} />
+
+      <div className="app-layout__content">
+        <header className="app-layout__header">
+          <span className="app-layout__clock">{clock}</span>
+          <span className="app-layout__status">
+            <span className={`app-layout__status-dot ${connectionStatus !== 'connected' ? 'app-layout__status-dot--disconnected' : ''}`} />
+            {connectionStatus === 'connected' ? 'Online' : 'Offline'}
+          </span>
+          <button className="app__theme-toggle" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Alternar tema" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>
             {theme === 'dark' ? '🌙' : '☀️'}
           </button>
-        </div>
-        <ul className="app__nav-tabs" role="tablist">
-          {navItems.map((item) => (
-            <li key={item.id} role="presentation">
-              <button
-                className={`app__nav-tab ${currentView === item.id ? 'app__nav-tab--active' : ''}`}
-                role="tab"
-                aria-selected={currentView === item.id}
-                aria-controls={`panel-${item.id}`}
-                onClick={() => handleNavClick(item.id)}
-              >
-                <span className="app__nav-tab-label">{item.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+        </header>
 
-      <main className="app__content" role="main">
-        <div
-          id="panel-dashboard"
-          role="tabpanel"
-          className={`app__panel ${currentView === 'dashboard' ? 'app__panel--active' : ''}`}
-          aria-hidden={currentView !== 'dashboard'}
-        >
+        <main style={{ padding: '0' }}>
           {currentView === 'dashboard' && <Dashboard />}
-        </div>
-
-        <div
-          id="panel-csv-import"
-          role="tabpanel"
-          className={`app__panel ${currentView === 'csv-import' ? 'app__panel--active' : ''}`}
-          aria-hidden={currentView !== 'csv-import'}
-        >
           {currentView === 'csv-import' && <CSVImport />}
-        </div>
-
-        <div
-          id="panel-incident-history"
-          role="tabpanel"
-          className={`app__panel ${currentView === 'incident-history' ? 'app__panel--active' : ''}`}
-          aria-hidden={currentView !== 'incident-history'}
-        >
           {currentView === 'incident-history' && <IncidentHistory teams={teams} />}
-        </div>
-
-        <div
-          id="panel-monitor-mapping"
-          role="tabpanel"
-          className={`app__panel ${currentView === 'monitor-mapping' ? 'app__panel--active' : ''}`}
-          aria-hidden={currentView !== 'monitor-mapping'}
-        >
           {currentView === 'monitor-mapping' && <MonitorMapping />}
-        </div>
-
-        <div
-          id="panel-escalation-config"
-          role="tabpanel"
-          className={`app__panel ${currentView === 'escalation-config' ? 'app__panel--active' : ''}`}
-          aria-hidden={currentView !== 'escalation-config'}
-        >
           {currentView === 'escalation-config' && <EscalationChainConfig />}
-        </div>
-
-        {userPerfil === 'Adm' && (
-          <>
-            <div
-              id="panel-team-management"
-              role="tabpanel"
-              className={`app__panel ${currentView === 'team-management' ? 'app__panel--active' : ''}`}
-              aria-hidden={currentView !== 'team-management'}
-            >
-              {currentView === 'team-management' && <TeamManagement />}
-            </div>
-
-            <div
-              id="panel-area-management"
-              role="tabpanel"
-              className={`app__panel ${currentView === 'area-management' ? 'app__panel--active' : ''}`}
-              aria-hidden={currentView !== 'area-management'}
-            >
-              {currentView === 'area-management' && <AreaManagement />}
-            </div>
-          </>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-plantonist-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'plantonist-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'plantonist-management'}
-          >
-            {currentView === 'plantonist-management' && <PlantonistManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-periodo-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'periodo-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'periodo-management'}
-          >
-            {currentView === 'periodo-management' && <PeriodoManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-escala-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'escala-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'escala-management'}
-          >
-            {currentView === 'escala-management' && <EscalaManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-horario-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'horario-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'horario-management'}
-          >
-            {currentView === 'horario-management' && <HorarioManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-problema-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'problema-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'problema-management'}
-          >
-            {currentView === 'problema-management' && <ProblemaManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-user-management"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'user-management' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'user-management'}
-          >
-            {currentView === 'user-management' && <UserManagement />}
-          </div>
-        )}
-
-        {(userPerfil === 'Adm' || userPerfil === 'Responsavel') && (
-          <div
-            id="panel-relatorio-contato"
-            role="tabpanel"
-            className={`app__panel ${currentView === 'relatorio-contato' ? 'app__panel--active' : ''}`}
-            aria-hidden={currentView !== 'relatorio-contato'}
-          >
-            {currentView === 'relatorio-contato' && <RelatorioContato />}
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-
-/** Connection status indicator for the nav bar */
-function ConnectionIndicator({ status }: { status: string }): React.ReactElement {
-  const statusLabels: Record<string, string> = {
-    connected: 'Conectado',
-    disconnected: 'Desconectado',
-    reconnecting: 'Reconectando...',
-  };
-
-  return (
-    <div className="app__connection-status">
-      <span className={`app__status-dot app__status-dot--${status}`} />
-      <span className="app__status-label">{statusLabels[status] || 'Desconhecido'}</span>
+          {(currentView as string) === 'escalation-view' && <EscalationView />}
+          {currentView === 'area-management' && <AreaManagement />}
+          {currentView === 'plantonist-management' && <PlantonistManagement />}
+          {currentView === 'escala-management' && <EscalaManagement />}
+          {currentView === 'horario-management' && <HorarioManagement />}
+          {currentView === 'problema-management' && <ProblemaManagement />}
+          {currentView === 'user-management' && <UserManagement />}
+          {currentView === 'relatorio-contato' && <RelatorioContato />}
+        </main>
+      </div>
     </div>
   );
 }

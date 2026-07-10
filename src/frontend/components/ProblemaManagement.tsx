@@ -31,6 +31,7 @@ export function ProblemaManagement(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -156,12 +157,34 @@ export function ProblemaManagement(): React.ReactElement {
         <button className="problema-management__btn problema-management__btn--primary" onClick={handleNew}>
           Novo Problema
         </button>
+        {selectedIds.size > 0 && (
+          <button className="problema-management__btn problema-management__btn--delete" onClick={async () => {
+            if (!confirm(`Deseja deletar ${selectedIds.size} problema(s)?`)) return;
+            setError(null);
+            try {
+              for (const id of selectedIds) {
+                await fetch(`/api/problemas/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+              }
+              setSuccess(`${selectedIds.size} problema(s) deletado(s).`);
+              setSelectedIds(new Set());
+              await fetchProblemas();
+            } catch { setError('Erro ao deletar.'); }
+          }}>
+            🗑️ Deletar ({selectedIds.size})
+          </button>
+        )}
       </div>
 
       <div className="problema-management__table-container">
         <table className="problema-management__table">
           <thead>
             <tr>
+              <th style={{ width: '40px' }}>
+                <input type="checkbox" checked={selectedIds.size === problemas.length && problemas.length > 0} onChange={(e) => {
+                  if (e.target.checked) setSelectedIds(new Set(problemas.map(p => p.id)));
+                  else setSelectedIds(new Set());
+                }} />
+              </th>
               <th>Código</th>
               <th>Descrição</th>
               <th>Áreas Responsáveis (Ordem)</th>
@@ -170,10 +193,17 @@ export function ProblemaManagement(): React.ReactElement {
           </thead>
           <tbody>
             {problemas.length === 0 ? (
-              <tr><td colSpan={4} className="problema-management__empty">{loading ? 'Carregando...' : 'Nenhum problema cadastrado.'}</td></tr>
+              <tr><td colSpan={5} className="problema-management__empty">{loading ? 'Carregando...' : 'Nenhum problema cadastrado.'}</td></tr>
             ) : (
               problemas.map((p) => (
-                <tr key={p.id}>
+                <tr key={p.id} className={selectedIds.has(p.id) ? 'problema-management__row--selected' : ''}>
+                  <td>
+                    <input type="checkbox" checked={selectedIds.has(p.id)} onChange={(e) => {
+                      const next = new Set(selectedIds);
+                      if (e.target.checked) next.add(p.id); else next.delete(p.id);
+                      setSelectedIds(next);
+                    }} />
+                  </td>
                   <td>{p.codigo}</td>
                   <td>{p.descricao}</td>
                   <td>
@@ -188,8 +218,10 @@ export function ProblemaManagement(): React.ReactElement {
                     </div>
                   </td>
                   <td>
-                    <button className="problema-management__btn problema-management__btn--edit problema-management__btn--small" onClick={() => handleEdit(p)}>Editar</button>
-                    <button className="problema-management__btn problema-management__btn--delete problema-management__btn--small" onClick={() => handleDelete(p)}>Deletar</button>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button className="problema-management__btn problema-management__btn--edit problema-management__btn--small" onClick={() => handleEdit(p)}>Editar</button>
+                      <button className="problema-management__btn problema-management__btn--delete problema-management__btn--small" onClick={() => handleDelete(p)}>Deletar</button>
+                    </div>
                   </td>
                 </tr>
               ))

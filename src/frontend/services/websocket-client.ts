@@ -38,7 +38,7 @@ export class WebSocketClient {
   private messageCallbacks: MessageCallback[] = [];
 
   constructor(options: WebSocketClientOptions = {}) {
-    this.url = options.url ?? 'ws://localhost:3000';
+    this.url = options.url ?? ((import.meta as any).env.VITE_WS_URL || 'ws://localhost:3000');
     this.maxReconnectAttempts = options.maxReconnectAttempts ?? Infinity;
     this.baseDelay = options.baseDelay ?? 1000;
     this.maxDelay = options.maxDelay ?? 30000;
