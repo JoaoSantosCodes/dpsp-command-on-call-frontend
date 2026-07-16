@@ -29,6 +29,7 @@ export function UserManagement(): React.ReactElement {
   const [fPerfil, setFPerfil] = useState('');
   const [fArea, setFArea] = useState('');
   const [fAtivo, setFAtivo] = useState(true);
+  const [fSenha, setFSenha] = useState(''); // Added for new user creation
   const [saving, setSaving] = useState(false);
 
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
@@ -50,11 +51,16 @@ export function UserManagement(): React.ReactElement {
 
   useEffect(() => { fetchUsers(); fetchAreas(); }, [fetchUsers, fetchAreas]);
 
-  const openEdit = (u: UserItem) => {
-    setEditing(u); setFNome(u.nome); setFUsername(u.username);
-    setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || '');
-    setFContato(u.contato || ''); setFPerfil(u.perfil);
-    setFArea(u.areaCodigo || ''); setFAtivo(u.ativo);
+  const openEdit = (u: UserItem | null) => {
+    if (u) {
+      setEditing(u); setFNome(u.nome); setFUsername(u.username);
+      setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || '');
+      setFContato(u.contato || ''); setFPerfil(u.perfil);
+      setFArea(u.areaCodigo || ''); setFAtivo(u.ativo); setFSenha('');
+    } else {
+      setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: null, nome: '', perfil: 'Plantonista', nivelEscalonamento: null, cargo: null, contato: null, username: '', ativo: true, aprovado: true });
+      setFNome(''); setFUsername(''); setFCargo(''); setFNivel(''); setFContato(''); setFPerfil('Plantonista'); setFArea(''); setFAtivo(true); setFSenha('');
+    }
     setError(null); setSuccess(null);
   };
 
@@ -62,9 +68,19 @@ export function UserManagement(): React.ReactElement {
     if (!editing) return;
     setSaving(true); setError(null);
     try {
-      const body = { nome: fNome, username: fUsername, cargo: fCargo || null, nivelEscalonamento: fNivel || null, contato: fContato || null, perfil: fPerfil, areaCodigo: fArea || null, ativo: fAtivo };
-      const r = await fetch(`/api/users/${editing.id}`, { method: 'PUT', headers, body: JSON.stringify(body) });
-      if (r.ok) { setSuccess('Usuário atualizado!'); setEditing(null); fetchUsers(); }
+      const isNew = editing.id === 0;
+      const body: any = { nome: fNome, username: fUsername, cargo: fCargo || null, nivelEscalonamento: fNivel || null, contato: fContato || null, perfil: fPerfil, areaCodigo: fArea || null, ativo: fAtivo };
+      
+      if (isNew) {
+        body.codigo = editing.codigo;
+        body.senha = fSenha; // Require password for new user
+      }
+
+      const method = isNew ? 'POST' : 'PUT';
+      const url = isNew ? '/api/users' : `/api/users/${editing.id}`;
+      
+      const r = await fetch(url, { method, headers, body: JSON.stringify(body) });
+      if (r.ok) { setSuccess(isNew ? 'Usuário criado com sucesso!' : 'Usuário atualizado!'); setEditing(null); fetchUsers(); }
       else { const d = await r.json(); setError(d.error || 'Erro'); }
     } catch { setError('Erro de conexão'); } finally { setSaving(false); }
   };
@@ -87,6 +103,12 @@ export function UserManagement(): React.ReactElement {
       {success && <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{success}</div>}
 
       <input style={{ width: '100%', background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }} placeholder="🔍 Buscar por nome, perfil ou cargo..." value={search} onChange={e => setSearch(e.target.value)} />
+
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+        <button onClick={() => openEdit(null)} style={{ ...primaryBtnStyle, maxWidth: '160px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+          ➕ Novo Usuário
+        </button>
+      </div>
 
       {selectedIds.size > 0 && (
         <div style={{ marginBottom: '0.75rem' }}>
@@ -164,14 +186,15 @@ export function UserManagement(): React.ReactElement {
         </table>
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição/Criação */}
       {editing && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => setEditing(null)}>
           <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--modal-border)', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '450px', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>Editar Usuário</h2>
+            <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>{editing.id === 0 ? 'Novo Usuário' : 'Editar Usuário'}</h2>
 
             <Field label="Nome" value={fNome} onChange={setFNome} />
             <Field label="Username" value={fUsername} onChange={setFUsername} />
+            {editing.id === 0 && <Field label="Senha" value={fSenha} onChange={setFSenha} placeholder="Senha inicial" />}
             <Field label="Cargo" value={fCargo} onChange={setFCargo} placeholder="Ex: Analista, Coordenador" />
             <div style={fieldStyle}><label style={labelStyle}>Nível de Escalonamento</label>
               <select style={inputStyle} value={fNivel} onChange={e => setFNivel(e.target.value)}>
