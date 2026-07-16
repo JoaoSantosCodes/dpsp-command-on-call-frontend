@@ -410,6 +410,5 @@ export function HorarioManagement(): React.ReactElement {
     </div>
   );
 }
-}
 
 export default HorarioManagement;
