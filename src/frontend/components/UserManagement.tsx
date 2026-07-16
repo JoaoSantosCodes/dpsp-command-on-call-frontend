@@ -201,7 +201,7 @@ export function UserManagement(): React.ReactElement {
                 <option value="">Sem nível</option><option value="1º Escalão">1º Escalão</option><option value="2º Escalão">2º Escalão</option><option value="3º Escalão">3º Escalão</option><option value="4º Escalão">4º Escalão</option><option value="Direto">Direto</option>
               </select>
             </div>
-            <Field label="Contato (telefone)" value={fContato} onChange={setFContato} placeholder="(11) 99999-9999" />
+            <Field label="Contato (telefone)" value={fContato} onChange={(v) => setFContato(maskPhone(v))} placeholder="(11) 99999-9999" />
             <div style={fieldStyle}><label style={labelStyle}>Perfil</label>
               <select style={inputStyle} value={fPerfil} onChange={e => setFPerfil(e.target.value)}>
                 <option value="Plantonista">Plantonista</option><option value="Responsavel">Responsável</option><option value="Consultor">Consultor</option>{user?.perfil === 'Adm' && <option value="Adm">Adm</option>}
@@ -238,6 +238,22 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
 }
 
 function perfilColor(p: string) { return p === 'Adm' ? 'var(--badge-red-bg)' : p === 'Responsavel' ? 'var(--badge-yellow-bg)' : p === 'Consultor' ? 'var(--badge-indigo-bg)' : 'var(--badge-green-bg)'; }
+
+function maskPhone(value: string) {
+  let v = value.replace(/\D/g, '');
+  if (v.length > 11) v = v.substring(0, 11);
+  if (v.length <= 10) return v.replace(/(\d{2})(\d{0,4})(\d{0,4})/, (match, p1, p2, p3) => {
+    let res = `(${p1}`;
+    if (p2) res += `) ${p2}`;
+    if (p3) res += `-${p3}`;
+    return res;
+  });
+  return v.replace(/(\d{2})(\d{5})(\d{0,4})/, (match, p1, p2, p3) => {
+    let res = `(${p1}) ${p2}`;
+    if (p3) res += `-${p3}`;
+    return res;
+  });
+}
 
 const thStyle: React.CSSProperties = { textAlign: 'left', padding: '0.6rem 0.75rem', fontWeight: 600, color: 'var(--th-color)', textTransform: 'uppercase', fontSize: '0.65rem', borderBottom: '1px solid var(--th-border)' };
 const tdStyle: React.CSSProperties = { padding: '0.5rem 0.75rem', color: 'var(--page-text)' };

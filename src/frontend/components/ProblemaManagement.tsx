@@ -87,6 +87,15 @@ export function ProblemaManagement(): React.ReactElement {
     setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
+  const handleClone = useCallback((p: Problema) => {
+    setEditing(null); // Novo registro
+    setFormCodigo(`${p.codigo}-COPIA`); 
+    setFormDescricao(p.descricao); 
+    setFormAreas([...p.areas]); 
+    setAddAreaCodigo('');
+    setShowForm(true); setError(null); setSuccess(null);
+  }, []);
+
   const handleCancel = useCallback(() => { setShowForm(false); setEditing(null); }, []);
 
   // Add area to grid
@@ -148,7 +157,7 @@ export function ProblemaManagement(): React.ReactElement {
 
   return (
     <div className="problema-management">
-      <h1 className="problema-management__title">CAD Problemas</h1>
+      <h1 className="problema-management__title">Cadastro de Problemas</h1>
 
       {error && <div className="problema-management__error" role="alert">{error}</div>}
       {success && <div className="problema-management__success" role="status">{success}</div>}
@@ -220,6 +229,7 @@ export function ProblemaManagement(): React.ReactElement {
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <button className="problema-management__btn problema-management__btn--edit problema-management__btn--small" onClick={() => handleEdit(p)}>Editar</button>
+                      <button className="problema-management__btn problema-management__btn--small" style={{ background: '#3b82f6', color: '#fff', border: 'none' }} onClick={() => handleClone(p)}>Clonar</button>
                       <button className="problema-management__btn problema-management__btn--delete problema-management__btn--small" onClick={() => handleDelete(p)}>Deletar</button>
                     </div>
                   </td>

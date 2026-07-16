@@ -240,131 +240,124 @@ export function HorarioManagement(): React.ReactElement {
     [token, fetchHorarios]
   );
 
+  // Search and selection
+  const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  // Form Modal state
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Horario | null>(null);
+
+  const handleNew = useCallback(() => {
+    setEditing(null);
+    setFormAreaCodigo('');
+    setFormHoraInicio('');
+    setFormHoraFim('');
+    setShowForm(true);
+    setError(null);
+    setSuccess(null);
+  }, []);
+
+  const handleEdit = useCallback((h: Horario) => {
+    setEditing(h);
+    setFormAreaCodigo(h.areaCodigo);
+    setFormHoraInicio(h.horaInicio);
+    setFormHoraFim(h.horaFim);
+    setShowForm(true);
+    setError(null);
+    setSuccess(null);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setShowForm(false);
+    setEditing(null);
+  }, []);
+
+  const filtered = horarios.filter(h => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return h.areaNome.toLowerCase().includes(s) || h.horaInicio.includes(s) || h.horaFim.includes(s);
+  });
+
   return (
     <div className="horario-management">
-      <h1 className="horario-management__title">CAD Horários</h1>
-      <p className="horario-management__subtitle">
-        Cadastre os horários de plantão por área.
-      </p>
+      <h1 className="horario-management__title">Cadastro de Horários</h1>
 
-      {error && (
-        <div className="horario-management__error" role="alert">{error}</div>
-      )}
+      {error && <div className="horario-management__error" role="alert">{error}</div>}
+      {success && <div className="horario-management__success" role="status">{success}</div>}
 
-      {success && (
-        <div className="horario-management__success" role="status">{success}</div>
-      )}
+      <input
+        style={{
+          width: '100%', background: 'var(--surface-bg)', border: '1px solid var(--input-border)',
+          color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem'
+        }}
+        placeholder="🔍 Buscar por área ou horário..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
 
-      {/* Form Card */}
-      <div className="horario-management__form-card">
-        <h2 className="horario-management__form-title">Novo Horário</h2>
-        <form onSubmit={handleSave}>
-          {/* Área */}
-          <div className="horario-management__field" style={{ marginBottom: '1rem' }}>
-            <label className="horario-management__label" htmlFor="horario-area">
-              Área
-            </label>
-            <select
-              id="horario-area"
-              className="horario-management__select"
-              value={formAreaCodigo}
-              onChange={(e) => setFormAreaCodigo(e.target.value)}
-              required
-            >
-              <option value="">Selecione uma área</option>
-              {areas.map((area) => (
-                <option key={area.id} value={area.codigo}>
-                  {area.nome}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+        <button className="horario-management__btn horario-management__btn--primary" onClick={handleNew}>
+          Novo Horário
+        </button>
 
-          {/* Horários: Inicial e Final */}
-          <div className="horario-management__form-row">
-            <div className="horario-management__field">
-              <label className="horario-management__label" htmlFor="horario-inicio">
-                Inicial
-              </label>
-              <select
-                id="horario-inicio"
-                className="horario-management__select"
-                value={formHoraInicio}
-                onChange={(e) => setFormHoraInicio(e.target.value)}
-                required
-              >
-                <option value="">Selecione</option>
-                {TIME_OPTIONS.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="horario-management__field">
-              <label className="horario-management__label" htmlFor="horario-fim">
-                Final
-              </label>
-              <select
-                id="horario-fim"
-                className="horario-management__select"
-                value={formHoraFim}
-                onChange={(e) => setFormHoraFim(e.target.value)}
-                required
-              >
-                <option value="">Selecione</option>
-                {TIME_OPTIONS.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="horario-management__field" style={{ justifyContent: 'flex-end' }}>
-              <button
-                type="submit"
-                className="horario-management__btn horario-management__btn--primary"
-                disabled={formLoading || !formAreaCodigo || !formHoraInicio || !formHoraFim}
-              >
-                {formLoading ? 'Salvando...' : 'Salvar'}
-              </button>
-            </div>
-          </div>
-        </form>
+        {selectedIds.size > 0 && (
+          <button className="horario-management__btn horario-management__btn--delete" onClick={async () => {
+            if (!confirm(`Deseja deletar ${selectedIds.size} horário(s)?`)) return;
+            setError(null);
+            try {
+              for (const id of selectedIds) {
+                await fetch(`/api/periodos/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+              }
+              setSuccess(`${selectedIds.size} horário(s) deletado(s).`);
+              setSelectedIds(new Set());
+              await fetchHorarios();
+            } catch { setError('Erro ao deletar.'); }
+          }}>
+            🗑️ Deletar ({selectedIds.size})
+          </button>
+        )}
       </div>
 
-      {/* Table with existing horários */}
-      <div className="horario-management__table-container">
-        <table className="horario-management__table">
-          <thead>
+      <div className="horario-management__table-container" style={{ border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
+        <table className="horario-management__table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+          <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
-              <th>Área</th>
-              <th>Horários</th>
-              <th>Ações</th>
+              <th style={{ textAlign: 'left', padding: '0.6rem 0.75rem', width: '40px' }}>
+                <input type="checkbox" checked={selectedIds.size === filtered.length && filtered.length > 0} onChange={(e) => {
+                  if (e.target.checked) setSelectedIds(new Set(filtered.map(p => p.id)));
+                  else setSelectedIds(new Set());
+                }} />
+              </th>
+              <th style={{ textAlign: 'left', padding: '0.6rem 0.75rem' }}>Área</th>
+              <th style={{ textAlign: 'left', padding: '0.6rem 0.75rem' }}>Horários</th>
+              <th style={{ textAlign: 'left', padding: '0.6rem 0.75rem' }}>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {horarios.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="horario-management__empty">
-                  {loading ? 'Carregando...' : 'Nenhum horário cadastrado.'}
-                </td>
-              </tr>
+            {filtered.length === 0 ? (
+              <tr><td colSpan={4} className="horario-management__empty" style={{ textAlign: 'center', padding: '2rem' }}>{loading ? 'Carregando...' : 'Nenhum horário cadastrado.'}</td></tr>
             ) : (
-              horarios.map((h) => (
-                <tr key={h.id}>
-                  <td>{h.areaNome}</td>
-                  <td>
-                    <span className="horario-management__time-badge">
+              filtered.map((h) => (
+                <tr key={h.id} style={{ borderBottom: '1px solid var(--row-border)', background: selectedIds.has(h.id) ? 'rgba(99,102,241,0.08)' : undefined }}>
+                  <td style={{ padding: '0.5rem 0.75rem' }}>
+                    <input type="checkbox" checked={selectedIds.has(h.id)} onChange={(e) => {
+                      const next = new Set(selectedIds);
+                      if (e.target.checked) next.add(h.id); else next.delete(h.id);
+                      setSelectedIds(next);
+                    }} />
+                  </td>
+                  <td style={{ padding: '0.5rem 0.75rem' }}>{h.areaNome}</td>
+                  <td style={{ padding: '0.5rem 0.75rem' }}>
+                    <span className="horario-management__time-badge" style={{ background: 'var(--badge-blue-bg)', color: 'var(--badge-blue-text)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>
                       🕐 {h.horaInicio} → {h.horaFim}
                     </span>
                   </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="horario-management__btn horario-management__btn--delete"
-                      onClick={() => handleDelete(h)}
-                    >
-                      Remover
-                    </button>
+                  <td style={{ padding: '0.5rem 0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button style={{ background: 'var(--btn-edit-bg)', border: '1px solid var(--btn-edit-border)', color: 'var(--btn-edit-text)', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => handleEdit(h)}>Editar</button>
+                      <button style={{ background: '#dc2626', border: 'none', color: '#fff', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => handleDelete(h)}>Deletar</button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -372,8 +365,51 @@ export function HorarioManagement(): React.ReactElement {
           </tbody>
         </table>
       </div>
+
+      {showForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => setShowForm(false)}>
+          <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--modal-border)', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>{editing ? 'Editar Horário' : 'Novo Horário'}</h2>
+            
+            <form onSubmit={handleSave}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--page-text-muted)', marginBottom: '0.4rem' }}>Área</label>
+                <select style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '6px' }} value={formAreaCodigo} onChange={e => setFormAreaCodigo(e.target.value)} required>
+                  <option value="">Selecione uma área</option>
+                  {areas.map(a => <option key={a.id} value={a.codigo}>{a.nome}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--page-text-muted)', marginBottom: '0.4rem' }}>Inicial</label>
+                  <select style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '6px' }} value={formHoraInicio} onChange={e => setFormHoraInicio(e.target.value)} required>
+                    <option value="">Selecione</option>
+                    {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--page-text-muted)', marginBottom: '0.4rem' }}>Final</label>
+                  <select style={{ width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '6px' }} value={formHoraFim} onChange={e => setFormHoraFim(e.target.value)} required>
+                    <option value="">Selecione</option>
+                    {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button type="button" onClick={handleCancel} style={{ flex: 1, padding: '0.6rem', background: 'var(--btn-cancel-bg)', border: '1px solid var(--btn-cancel-border)', color: 'var(--btn-cancel-text)', borderRadius: '8px', cursor: 'pointer' }}>Cancelar</button>
+                <button type="submit" disabled={formLoading || !formAreaCodigo || !formHoraInicio || !formHoraFim} style={{ flex: 1, padding: '0.6rem', background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', borderRadius: '8px', cursor: 'pointer' }}>
+                  {formLoading ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
 }
 
 export default HorarioManagement;

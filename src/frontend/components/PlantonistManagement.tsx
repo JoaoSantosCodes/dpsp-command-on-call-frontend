@@ -157,7 +157,7 @@ export function PlantonistManagement(): React.ReactElement {
               <th style={thStyle}>Cargo</th>
               <th style={thStyle}>Contato</th>
               <th style={thStyle}>Área</th>
-              <th style={thStyle}>Escalation</th>
+              <th style={thStyle}>Nível de Escalonamento</th>
               <th style={thStyle}>Ações</th>
             </tr>
           </thead>
@@ -180,7 +180,12 @@ export function PlantonistManagement(): React.ReactElement {
                       <span style={{ color: 'var(--badge-red-text)' }}>3º {area?.gerenteNome || '—'}</span>
                     </div>
                   </td>
-                  <td style={tdStyle}><button onClick={() => handleEdit(plantonist)} style={editBtnStyle}>Editar</button></td>
+                  <td style={tdStyle}>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button onClick={() => handleEdit(plantonist)} style={editBtnStyle}>Editar</button>
+                      <button onClick={() => handleDelete(plantonist)} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
+                    </div>
+                  </td>
                 </tr>
               );
             })}

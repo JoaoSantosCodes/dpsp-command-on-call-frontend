@@ -19,6 +19,10 @@ export function EscalaManagement(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [filterArea, setFilterArea] = useState('');
+  const [filterPlantonista, setFilterPlantonista] = useState('');
+  const [filterMes, setFilterMes] = useState('');
+  const [filterAno, setFilterAno] = useState('');
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -197,9 +201,21 @@ export function EscalaManagement(): React.ReactElement {
   }, [token, fetchEscalas]);
 
   const filtered = escalas.filter(esc => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return esc.codigo.toLowerCase().includes(s) || getPlantonistaNome(esc.usuarioCodigo).toLowerCase().includes(s) || getAreaNome(esc.areaCodigo).toLowerCase().includes(s);
+    let match = true;
+    if (search) {
+      const s = search.toLowerCase();
+      match = match && (esc.codigo.toLowerCase().includes(s) || getPlantonistaNome(esc.usuarioCodigo).toLowerCase().includes(s) || getAreaNome(esc.areaCodigo).toLowerCase().includes(s));
+    }
+    if (filterArea) match = match && esc.areaCodigo === filterArea;
+    if (filterPlantonista) match = match && esc.usuarioCodigo === filterPlantonista;
+    if (filterMes || filterAno) {
+      const p = periodos.find(per => per.codigo === esc.periodoCodigo);
+      if (p) {
+        if (filterMes) match = match && p.data.split('-')[1] === filterMes.padStart(2, '0');
+        if (filterAno) match = match && p.data.split('-')[0] === filterAno;
+      }
+    }
+    return match;
   });
 
   return (
@@ -209,8 +225,27 @@ export function EscalaManagement(): React.ReactElement {
       {error && <div style={{ background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{error}</div>}
       {success && <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{success}</div>}
 
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', alignItems: 'center' }}>
-        <input style={{ flex: 1, background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem' }} placeholder="🔍 Buscar por código, plantonista ou área..." value={search} onChange={e => setSearch(e.target.value)} />
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <select style={{ background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '8px', fontSize: '0.85rem' }} value={filterArea} onChange={e => setFilterArea(e.target.value)}>
+          <option value="">Todas as Áreas</option>
+          {areas.map(a => <option key={a.id} value={a.codigo}>{a.nome}</option>)}
+        </select>
+        <select style={{ background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '8px', fontSize: '0.85rem' }} value={filterPlantonista} onChange={e => setFilterPlantonista(e.target.value)}>
+          <option value="">Todos os Plantonistas</option>
+          {plantonistas.map(p => <option key={p.id} value={p.codigo}>{p.nome}</option>)}
+        </select>
+        <select style={{ background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '8px', fontSize: '0.85rem' }} value={filterMes} onChange={e => setFilterMes(e.target.value)}>
+          <option value="">Qualquer Mês</option>
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <select style={{ background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem', borderRadius: '8px', fontSize: '0.85rem' }} value={filterAno} onChange={e => setFilterAno(e.target.value)}>
+          <option value="">Qualquer Ano</option>
+          <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+        </select>
+        <input style={{ flex: 1, minWidth: '200px', background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem' }} placeholder="🔍 Buscar por código..." value={search} onChange={e => setSearch(e.target.value)} />
         <button onClick={handleNew} style={{ background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>+ Nova Escala</button>
       </div>
 
@@ -235,7 +270,10 @@ export function EscalaManagement(): React.ReactElement {
                 <td style={tdStyle}>{getAreaNome(escala.areaCodigo)}</td>
                 <td style={tdStyle}>{getPeriodoDisplay(escala.periodoCodigo)}</td>
                 <td style={tdStyle}>
-                  <button onClick={() => handleEdit(escala)} style={editBtnStyle}>Editar</button>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button onClick={() => handleEdit(escala)} style={editBtnStyle}>Editar</button>
+                    <button onClick={() => handleDelete(escala)} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -288,15 +326,7 @@ export function EscalaManagement(): React.ReactElement {
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                   <select style={{ ...inputStyle, flex: '1 1 auto', minWidth: '150px' }} value={formHorario} onChange={(e) => setFormHorario(e.target.value)}>
                     <option value="">Horário</option>
-                    <option value="24hs">24hs</option>
-                    <option value="07:00 às 17:00">07:00 às 17:00</option>
-                    <option value="08:00 às 18:00">08:00 às 18:00</option>
-                    <option value="18:00 às 06:00">18:00 às 06:00</option>
-                    <option value="18:00 às 08:00">18:00 às 08:00</option>
-                    <option value="08:00 às 06:00">08:00 às 06:00</option>
-                    <option value="08:00 às 08:00">08:00 às 08:00</option>
-                    <option value="00:00 às 23:59">00:00 às 23:59</option>
-                    {periodos.length > 0 && [...new Set(periodos.map(p => p.horarios))].filter(h => !['24hs','07:00 às 17:00','08:00 às 18:00','18:00 às 06:00','18:00 às 08:00','08:00 às 06:00','08:00 às 08:00','00:00 às 23:59'].includes(h)).map((h, i) => (<option key={`extra-${i}`} value={h}>{h}</option>))}
+                    {periodos.length > 0 ? [...new Set(periodos.map(p => p.horarios))].map((h, i) => (<option key={`extra-${i}`} value={h}>{h}</option>)) : <option disabled>Nenhum horário na área</option>}
                   </select>
                   <select style={{ ...inputStyle, flex: '1 1 auto', minWidth: '120px' }} value={formDia} onChange={(e) => setFormDia(e.target.value)}>
                     <option value="">Dia</option>
