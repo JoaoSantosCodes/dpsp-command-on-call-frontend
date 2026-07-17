@@ -268,6 +268,16 @@ export function HorarioManagement(): React.ReactElement {
     setSuccess(null);
   }, []);
 
+  const handleClone = useCallback((h: Horario) => {
+    setEditing(null);
+    setFormAreaCodigo(h.areaCodigo);
+    setFormHoraInicio(h.horaInicio);
+    setFormHoraFim(h.horaFim);
+    setShowForm(true);
+    setError(null);
+    setSuccess(null);
+  }, []);
+
   const handleCancel = useCallback(() => {
     setShowForm(false);
     setEditing(null);
@@ -356,6 +366,7 @@ export function HorarioManagement(): React.ReactElement {
                   <td style={{ padding: '0.5rem 0.75rem' }}>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <button style={{ background: 'var(--btn-edit-bg)', border: '1px solid var(--btn-edit-border)', color: 'var(--btn-edit-text)', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => handleEdit(h)}>Editar</button>
+                      <button style={{ background: '#3b82f6', border: 'none', color: '#fff', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => handleClone(h)}>Clonar</button>
                       <button style={{ background: '#dc2626', border: 'none', color: '#fff', padding: '0.3rem 0.6rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.75rem' }} onClick={() => handleDelete(h)}>Deletar</button>
                     </div>
                   </td>

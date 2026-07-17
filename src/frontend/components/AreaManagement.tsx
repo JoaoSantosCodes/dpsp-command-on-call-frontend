@@ -73,6 +73,17 @@ export function AreaManagement(): React.ReactElement {
     setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
+  const handleClone = useCallback((area: Area) => {
+    setEditingArea(null);
+    setFormCodigo(`${area.codigo}-COPIA`); setFormNome(`${area.nome} (Cópia)`);
+    setFormTorre(area.torre || '');
+    setFormCoordenadorNome(area.coordenadorNome || '');
+    setFormCoordenadorContato(area.coordenadorContato || '');
+    setFormGerenteNome(area.gerenteNome || '');
+    setFormGerenteContato(area.gerenteContato || '');
+    setShowForm(true); setError(null); setSuccess(null);
+  }, []);
+
   const handleCancel = useCallback(() => { setShowForm(false); setEditingArea(null); }, []);
 
   const handleSave = useCallback(async (e: React.FormEvent) => {
@@ -148,7 +159,12 @@ export function AreaManagement(): React.ReactElement {
                 <td style={tdStyle}>{area.coordenadorContato || '—'}</td>
                 <td style={tdStyle}>{area.gerenteNome || '—'}</td>
                 <td style={tdStyle}>{area.gerenteContato || '—'}</td>
-                <td style={tdStyle}><button onClick={() => handleEdit(area)} style={editBtnStyle}>Editar</button></td>
+                <td style={tdStyle}>
+                  <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    <button onClick={() => handleEdit(area)} style={editBtnStyle}>Editar</button>
+                    <button onClick={() => handleClone(area)} style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -168,13 +184,13 @@ export function AreaManagement(): React.ReactElement {
               <h3 style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Coordenador</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <Field label="Nome" value={formCoordenadorNome} onChange={setFormCoordenadorNome} placeholder="Nome" />
-                <Field label="Contato" value={formCoordenadorContato} onChange={setFormCoordenadorContato} placeholder="Telefone" />
+                <Field label="Contato" value={formCoordenadorContato} onChange={(v) => setFormCoordenadorContato(maskPhone(v))} placeholder="(11) 99999-9999" />
               </div>
 
               <h3 style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)', margin: '1rem 0 0.75rem', textTransform: 'uppercase' }}>Gerente</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <Field label="Nome" value={formGerenteNome} onChange={setFormGerenteNome} placeholder="Nome" />
-                <Field label="Contato" value={formGerenteContato} onChange={setFormGerenteContato} placeholder="Telefone" />
+                <Field label="Contato" value={formGerenteContato} onChange={(v) => setFormGerenteContato(maskPhone(v))} placeholder="(11) 99999-9999" />
               </div>
 
               {error && <div style={{ color: 'var(--error-text)', fontSize: '0.8rem', marginTop: '0.5rem' }}>{error}</div>}
@@ -193,6 +209,22 @@ export function AreaManagement(): React.ReactElement {
 
 function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (<div style={fieldStyle}><label style={labelStyle}>{label}</label><input style={inputStyle} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} /></div>);
+}
+
+function maskPhone(value: string) {
+  let v = value.replace(/\D/g, '');
+  if (v.length > 11) v = v.substring(0, 11);
+  if (v.length <= 10) return v.replace(/(\d{2})(\d{0,4})(\d{0,4})/, (match, p1, p2, p3) => {
+    let res = `(${p1}`;
+    if (p2) res += `) ${p2}`;
+    if (p3) res += `-${p3}`;
+    return res;
+  });
+  return v.replace(/(\d{2})(\d{5})(\d{0,4})/, (match, p1, p2, p3) => {
+    let res = `(${p1}) ${p2}`;
+    if (p3) res += `-${p3}`;
+    return res;
+  });
 }
 
 const thStyle: React.CSSProperties = { textAlign: 'left', padding: '0.6rem 0.75rem', fontWeight: 600, color: 'var(--th-color)', textTransform: 'uppercase', fontSize: '0.65rem', borderBottom: '1px solid var(--th-border)' };

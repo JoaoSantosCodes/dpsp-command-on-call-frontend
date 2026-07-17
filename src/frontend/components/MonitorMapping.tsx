@@ -159,11 +159,11 @@ export function MonitorMapping(): React.ReactElement {
 
       {/* Modal de detalhes — Todas as áreas responsáveis + plantonistas */}
       {selectedArea && selectedProblema && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => { setSelectedArea(null); setSelectedProblema(null); }}>
-          <div style={{ background: '#0d1b2a', border: '1px solid #1e90ff', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '550px', maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 }} onClick={() => { setSelectedArea(null); setSelectedProblema(null); }}>
+          <div style={{ background: 'var(--modal-bg)', border: '1px solid var(--modal-border)', borderRadius: '16px', padding: '1.5rem', width: '90%', maxWidth: '550px', maxHeight: '80vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <h2 style={{ fontSize: '1rem', color: '#e4e4e7', margin: 0 }}>{selectedProblema.descricao}</h2>
-              <button onClick={() => { setSelectedArea(null); setSelectedProblema(null); }} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+              <h2 style={{ fontSize: '1rem', color: 'var(--page-text)', margin: 0 }}>{selectedProblema.descricao}</h2>
+              <button onClick={() => { setSelectedArea(null); setSelectedProblema(null); }} style={{ background: 'none', border: 'none', color: 'var(--error-text)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             <h3 style={{ fontSize: '0.8rem', color: '#818cf8', marginBottom: '0.5rem' }}>Áreas Responsáveis (ordem de acionamento)</h3>
@@ -176,19 +176,19 @@ export function MonitorMapping(): React.ReactElement {
                 return true; // will fix below
               });
               return (
-                <div key={pa.areaCodigo} style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.75rem' }}>
+                <div key={pa.areaCodigo} style={{ background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#818cf8' }}>{pa.ordem}º</span>
-                    <span style={{ fontSize: '0.9rem', color: '#e4e4e7', fontWeight: 600 }}>{area?.nome || pa.areaCodigo}</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--badge-indigo-text)' }}>{pa.ordem}º</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--page-text)', fontWeight: 600 }}>{area?.nome || pa.areaCodigo}</span>
                   </div>
                   {area?.coordenadorNome && (
-                    <div style={{ fontSize: '0.75rem', color: '#a1a1aa', marginBottom: '0.2rem' }}>
-                      Coordenador: {area.coordenadorNome} {area.coordenadorContato && <span style={{ color: '#22c55e' }}>📞 {area.coordenadorContato}</span>}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--page-text-muted)', marginBottom: '0.2rem' }}>
+                      Coordenador: {area.coordenadorNome} {area.coordenadorContato && <span style={{ color: 'var(--badge-green-text)' }}>📞 {area.coordenadorContato}</span>}
                     </div>
                   )}
                   {area?.gerenteNome && (
-                    <div style={{ fontSize: '0.75rem', color: '#a1a1aa', marginBottom: '0.5rem' }}>
-                      Gerente: {area.gerenteNome} {area.gerenteContato && <span style={{ color: '#22c55e' }}>📞 {area.gerenteContato}</span>}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--page-text-muted)', marginBottom: '0.5rem' }}>
+                      Gerente: {area.gerenteNome} {area.gerenteContato && <span style={{ color: 'var(--badge-green-text)' }}>📞 {area.gerenteContato}</span>}
                     </div>
                   )}
 
@@ -197,15 +197,15 @@ export function MonitorMapping(): React.ReactElement {
                     <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                       <div style={{ fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase' }}>Plantonistas</div>
                       {areaEscalas.filter(e => e.areaCodigo === pa.areaCodigo).map((e, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.15)', padding: '0.4rem 0.6rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.4rem' }}>
-                          <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 600 }}>{e.nivel}</span>
-                          <span style={{ fontSize: '0.8rem', color: '#e4e4e7', fontWeight: 500 }}>👤 {e.plantonista}</span>
-                          <span style={{ fontSize: '0.7rem', color: '#22c55e' }}>📞 {e.contato}</span>
-                          <span style={{ fontSize: '0.7rem', color: '#818cf8' }}>🕐 {e.horario}</span>
-                          <span style={{ fontSize: '0.7rem', color: '#a1a1aa' }}>📅 {e.data}</span>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', background: 'var(--surface-bg)', border: '1px solid var(--success-border)', padding: '0.4rem 0.6rem', borderRadius: '6px', flexWrap: 'wrap', gap: '0.4rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--badge-yellow-text)', fontWeight: 600 }}>{e.nivel}</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--page-text)', fontWeight: 500 }}>👤 {e.plantonista}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--badge-green-text)' }}>📞 {e.contato}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--badge-indigo-text)' }}>🕐 {e.horario}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--page-text-muted)' }}>📅 {e.data}</span>
                           <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', width: '100%', marginTop: '0.3rem' }}>
                             <select
-                              style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: '#1a2332', border: '1px solid rgba(255,255,255,0.15)', color: '#e4e4e7', cursor: 'pointer' }}
+                              style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', cursor: 'pointer' }}
                               defaultValue={e.statusContato || 'pendente'}
                               onChange={async (ev) => {
                                 const status = ev.target.value;
@@ -223,7 +223,7 @@ export function MonitorMapping(): React.ReactElement {
                               <option value="atendido">Atendido</option>
                               <option value="nao_atendido">Não Atendido</option>
                             </select>
-                            <input id={`obs-${i}-${pa.areaCodigo}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: '#1a2332', border: '1px solid rgba(255,255,255,0.1)', color: '#e4e4e7' }} />
+                            <input id={`obs-${i}-${pa.areaCodigo}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)' }} />
                           </div>
                         </div>
                       ))}

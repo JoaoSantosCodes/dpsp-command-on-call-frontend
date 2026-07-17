@@ -64,6 +64,12 @@ export function UserManagement(): React.ReactElement {
     setError(null); setSuccess(null);
   };
 
+  const openClone = (u: UserItem) => {
+    setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: u.areaCodigo, nome: `${u.nome} (Cópia)`, perfil: u.perfil, nivelEscalonamento: u.nivelEscalonamento, cargo: u.cargo, contato: u.contato, username: `${u.username}_copia`, ativo: u.ativo, aprovado: u.aprovado });
+    setFNome(`${u.nome} (Cópia)`); setFUsername(`${u.username}_copia`); setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || ''); setFContato(u.contato || ''); setFPerfil(u.perfil); setFArea(u.areaCodigo || ''); setFAtivo(u.ativo); setFSenha('');
+    setError(null); setSuccess(null);
+  };
+
   const handleSave = async () => {
     if (!editing) return;
     setSaving(true); setError(null);
@@ -171,6 +177,7 @@ export function UserManagement(): React.ReactElement {
                 <td style={tdStyle}>
                   <div style={{ display: 'flex', gap: '0.3rem' }}>
                     <button onClick={() => openEdit(u)} style={editBtnStyle}>Editar</button>
+                    <button onClick={() => openClone(u)} style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
                     <button onClick={async () => {
                       if (!confirm(`Deletar "${u.nome}"?`)) return;
                       try {

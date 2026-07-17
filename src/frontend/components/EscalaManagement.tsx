@@ -143,8 +143,32 @@ export function EscalaManagement(): React.ReactElement {
     setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
     setFormPeriodoCodigo(escala.periodoCodigo); setFormDia('');
     setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
+
+    const periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    if (periodo) {
+      setFormEntradas([{ horario: periodo.horarios, data: periodo.data }]);
+    } else {
+      setFormEntradas([]);
+    }
+
     setShowForm(true); setError(null); setSuccess(null);
-  }, []);
+  }, [periodos]);
+
+  const handleClone = useCallback((escala: Escala) => {
+    setEditingEscala(null);
+    setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
+    setFormPeriodoCodigo(escala.periodoCodigo); setFormDia('');
+    setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
+
+    const periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    if (periodo) {
+      setFormEntradas([{ horario: periodo.horarios, data: periodo.data }]);
+    } else {
+      setFormEntradas([]);
+    }
+
+    setShowForm(true); setError(null); setSuccess(null);
+  }, [periodos]);
 
   const handleCancel = useCallback(() => { setShowForm(false); setEditingEscala(null); }, []);
 
@@ -157,12 +181,17 @@ export function EscalaManagement(): React.ReactElement {
 
     setFormLoading(true);
     try {
-      for (const entrada of formEntradas) {
+      if (editingEscala) {
+        if (formEntradas.length !== 1) {
+          setError('Ao editar, você deve manter apenas 1 data/horário na lista.');
+          setFormLoading(false);
+          return;
+        }
+        const entrada = formEntradas[0];
         const periodoRes = await fetch('/api/periodos', {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({ data: entrada.data, horarios: entrada.horario, areaCodigo: formAreaCodigo }),
         });
-
         let periodoCodigo = '';
         if (periodoRes.ok) {
           const periodoData = await periodoRes.json();
@@ -172,19 +201,47 @@ export function EscalaManagement(): React.ReactElement {
           if (existingRes.ok) {
             const existingData = await existingRes.json();
             const perList = existingData.periodos || existingData || [];
-            const match = perList.find((p: any) => p.data === entrada.data);
+            const match = perList.find((p: any) => p.data === entrada.data && p.horarios === entrada.horario);
             if (match) periodoCodigo = match.codigo;
           }
         }
-        if (!periodoCodigo) continue;
+        if (!periodoCodigo) { setError('Erro ao resolver período da edição.'); setFormLoading(false); return; }
 
-        const codigo = `ESC-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
-        await fetch('/api/escalas', {
-          method: 'POST', headers: authHeaders,
-          body: JSON.stringify({ codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
+        await fetch(`/api/escalas/${editingEscala.id}`, {
+          method: 'PUT', headers: authHeaders,
+          body: JSON.stringify({ codigo: editingEscala.codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
         });
+        setSuccess('Escala atualizada!');
+      } else {
+        for (const entrada of formEntradas) {
+          const periodoRes = await fetch('/api/periodos', {
+            method: 'POST', headers: authHeaders,
+            body: JSON.stringify({ data: entrada.data, horarios: entrada.horario, areaCodigo: formAreaCodigo }),
+          });
+  
+          let periodoCodigo = '';
+          if (periodoRes.ok) {
+            const periodoData = await periodoRes.json();
+            periodoCodigo = periodoData.codigo;
+          } else {
+            const existingRes = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(formAreaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
+            if (existingRes.ok) {
+              const existingData = await existingRes.json();
+              const perList = existingData.periodos || existingData || [];
+              const match = perList.find((p: any) => p.data === entrada.data && p.horarios === entrada.horario);
+              if (match) periodoCodigo = match.codigo;
+            }
+          }
+          if (!periodoCodigo) continue;
+  
+          const codigo = `ESC-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`;
+          await fetch('/api/escalas', {
+            method: 'POST', headers: authHeaders,
+            body: JSON.stringify({ codigo, areaCodigo: formAreaCodigo, periodoCodigo, usuarioCodigo: formUsuarioCodigo }),
+          });
+        }
+        setSuccess('Escala criada!');
       }
-      setSuccess('Escala criada!');
       setShowForm(false); setEditingEscala(null); await fetchEscalas();
     } catch { setError('Erro ao conectar.'); }
     finally { setFormLoading(false); }
@@ -272,6 +329,7 @@ export function EscalaManagement(): React.ReactElement {
                 <td style={tdStyle}>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button onClick={() => handleEdit(escala)} style={editBtnStyle}>Editar</button>
+                    <button onClick={() => handleClone(escala)} style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
                     <button onClick={() => handleDelete(escala)} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
                   </div>
                 </td>
