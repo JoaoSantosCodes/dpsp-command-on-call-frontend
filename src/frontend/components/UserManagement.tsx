@@ -135,8 +135,8 @@ export function UserManagement(): React.ReactElement {
         </div>
       )}
 
-      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+      <div className="responsive-table-container">
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
               <th style={{ ...thStyle, width: '40px' }}>
@@ -156,10 +156,24 @@ export function UserManagement(): React.ReactElement {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>{loading ? 'Carregando...' : 'Nenhum usuário'}</td></tr>
+            {loading && filtered.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="skeleton-row" style={{ borderBottom: '1px solid var(--row-border)' }}>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '20px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '120px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '80px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '60px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '100px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '90px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '100px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '30px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '140px' }}></div></td>
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>Nenhum usuário</td></tr>
             ) : filtered.map(u => (
-              <tr key={u.id} style={{ borderBottom: '1px solid var(--row-border)', background: selectedIds.has(u.id) ? 'rgba(99,102,241,0.08)' : undefined }}>
+              <tr key={u.id} className="table-row-hover" style={{ borderBottom: '1px solid var(--row-border)', background: selectedIds.has(u.id) ? 'rgba(99,102,241,0.08)' : undefined }}>
                 <td style={tdStyle}>
                   <input type="checkbox" checked={selectedIds.has(u.id)} onChange={(e) => {
                     const next = new Set(selectedIds);
@@ -175,16 +189,16 @@ export function UserManagement(): React.ReactElement {
                 <td style={tdStyle}>{getAreaNome(u.areaCodigo)}</td>
                 <td style={tdStyle}>{u.ativo ? '✅' : '❌'}</td>
                 <td style={tdStyle}>
-                  <div style={{ display: 'flex', gap: '0.3rem' }}>
-                    <button onClick={() => openEdit(u)} style={editBtnStyle}>Editar</button>
-                    <button onClick={() => openClone(u)} style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button onClick={() => openEdit(u)} className="action-btn-anim" style={editBtnStyle}>Editar</button>
+                    <button onClick={() => openClone(u)} className="action-btn-anim" style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
                     <button onClick={async () => {
                       if (!confirm(`Deletar "${u.nome}"?`)) return;
                       try {
                         await fetch(`/api/users/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                         setSuccess('Usuário deletado.'); fetchUsers();
                       } catch { setError('Erro'); }
-                    }} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
+                    }} className="action-btn-anim" style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
                   </div>
                 </td>
               </tr>

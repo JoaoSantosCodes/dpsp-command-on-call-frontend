@@ -306,8 +306,8 @@ export function EscalaManagement(): React.ReactElement {
         <button onClick={handleNew} style={{ background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>+ Nova Escala</button>
       </div>
 
-      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+      <div className="responsive-table-container">
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
               <th style={thStyle}>Código</th>
@@ -318,19 +318,29 @@ export function EscalaManagement(): React.ReactElement {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>{loading ? 'Carregando...' : 'Nenhuma escala cadastrada.'}</td></tr>
+            {loading && filtered.length === 0 ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="skeleton-row" style={{ borderBottom: '1px solid var(--row-border)' }}>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '80px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '120px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '100px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '140px' }}></div></td>
+                  <td style={tdStyle}><div className="skeleton-box" style={{ width: '160px' }}></div></td>
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>Nenhuma escala cadastrada.</td></tr>
             ) : filtered.map(escala => (
-              <tr key={escala.id} style={{ borderBottom: '1px solid var(--row-border)' }}>
+              <tr key={escala.id} className="table-row-hover" style={{ borderBottom: '1px solid var(--row-border)' }}>
                 <td style={tdStyle}><span style={{ background: 'var(--badge-indigo-bg)', color: 'var(--badge-indigo-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem' }}>{escala.codigo}</span></td>
                 <td style={tdStyle}>{getPlantonistaNome(escala.usuarioCodigo)}</td>
                 <td style={tdStyle}>{getAreaNome(escala.areaCodigo)}</td>
                 <td style={tdStyle}>{getPeriodoDisplay(escala.periodoCodigo)}</td>
                 <td style={tdStyle}>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
-                    <button onClick={() => handleEdit(escala)} style={editBtnStyle}>Editar</button>
-                    <button onClick={() => handleClone(escala)} style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
-                    <button onClick={() => handleDelete(escala)} style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
+                    <button onClick={() => handleEdit(escala)} className="action-btn-anim" style={editBtnStyle}>Editar</button>
+                    <button onClick={() => handleClone(escala)} className="action-btn-anim" style={{ ...editBtnStyle, background: '#3b82f6', color: '#fff', borderColor: '#3b82f6' }}>Clonar</button>
+                    <button onClick={() => handleDelete(escala)} className="action-btn-anim" style={{ ...editBtnStyle, background: '#dc2626', color: '#fff' }}>Deletar</button>
                   </div>
                 </td>
               </tr>
