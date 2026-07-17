@@ -14,6 +14,8 @@ interface ImportResponse {
   usersUpdated?: number;
   periodosCreated?: number;
   escalasCreated?: number;
+  created?: number;
+  updated?: number;
   errors?: string[];
 }
 
