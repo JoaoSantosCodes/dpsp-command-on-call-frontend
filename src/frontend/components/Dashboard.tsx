@@ -4,6 +4,13 @@ import { MonitorDetailModal } from './MonitorDetailModal';
 import type { ActiveIncident, ConnectionStatus, Monitor } from '../../shared/types';
 import './Dashboard.css';
 
+interface AnalyticsData {
+  mtta_seconds: number;
+  mttr_seconds: number;
+  total_incidents: number;
+  resolved_incidents: number;
+}
+
 interface AreaScheduleInfo {
   areaCodigo: string;
   areaNome: string;
@@ -33,6 +40,17 @@ export function Dashboard(): React.ReactElement {
 
   const [areaSchedules, setAreaSchedules] = useState<AreaScheduleInfo[]>([]);
   const [allMonitors, setAllMonitors] = useState<Monitor[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+
+  // Fetch analytics data
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch('/api/analytics', { headers });
+      if (res.ok) setAnalytics(await res.json());
+    } catch { /* silent */ }
+  }, [token]);
 
   // Fetch monitors from API
   const fetchMonitors = useCallback(async () => {
@@ -102,12 +120,14 @@ export function Dashboard(): React.ReactElement {
   useEffect(() => {
     fetchMonitors();
     fetchAreaData();
+    fetchAnalytics();
     const interval = setInterval(() => {
       fetchMonitors();
       fetchAreaData();
+      fetchAnalytics();
     }, 30000);
     return () => clearInterval(interval);
-  }, [fetchMonitors, fetchAreaData]);
+  }, [fetchMonitors, fetchAreaData, fetchAnalytics]);
 
   // Use store monitors if available, otherwise API-fetched ones
   const displayMonitors = monitors.length > 0 ? monitors : allMonitors;
@@ -125,6 +145,7 @@ export function Dashboard(): React.ReactElement {
   return (
     <div className="dashboard">
       <Header connectionStatus={connectionStatus} />
+      <AnalyticsPanel data={analytics} />
       <div className="dashboard-search">
         <input
           className="dashboard-search__input"
@@ -143,6 +164,42 @@ export function Dashboard(): React.ReactElement {
           onClose={() => setSelectedMonitor(null)}
         />
       )}
+    </div>
+  );
+}
+
+function formatTime(seconds: number) {
+  if (!seconds || isNaN(seconds)) return '0m';
+  if (seconds < 60) return `${Math.floor(seconds)}s`;
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const remainingM = m % 60;
+  return `${h}h ${remainingM}m`;
+}
+
+function AnalyticsPanel({ data }: { data: AnalyticsData | null }) {
+  if (!data) return null;
+  return (
+    <div className="analytics-panel">
+      <div className="analytics-card">
+        <span className="analytics-card__title">Total Intercorrências (30d)</span>
+        <span className="analytics-card__value">{data.total_incidents}</span>
+      </div>
+      <div className="analytics-card">
+        <span className="analytics-card__title">MTTA (TMA)</span>
+        <span className="analytics-card__value">{formatTime(data.mtta_seconds)}</span>
+        <span className="analytics-card__desc">Tempo Médio de Atendimento</span>
+      </div>
+      <div className="analytics-card">
+        <span className="analytics-card__title">MTTR (TMR)</span>
+        <span className="analytics-card__value">{formatTime(data.mttr_seconds)}</span>
+        <span className="analytics-card__desc">Tempo Médio de Resolução</span>
+      </div>
+      <div className="analytics-card">
+        <span className="analytics-card__title">Taxa de Resolução</span>
+        <span className="analytics-card__value">{data.total_incidents ? Math.round((data.resolved_incidents / data.total_incidents) * 100) : 0}%</span>
+      </div>
     </div>
   );
 }
