@@ -130,25 +130,36 @@ export function AreaSelector(): React.ReactElement {
 
         {!loading && areas.length > 0 && (
           <div className="area-selector__list" role="group" aria-label="Áreas disponíveis">
-            {areas.map((area) => (
-              <label
-                key={area.codigo}
-                className={`area-selector__item ${selected.includes(area.codigo) ? 'area-selector__item--selected' : ''}`}
-              >
-                <input
-                  type="checkbox"
-                  className="area-selector__checkbox"
-                  checked={selected.includes(area.codigo)}
-                  onChange={() => toggleArea(area.codigo)}
-                  aria-label={`Selecionar área ${area.nome}`}
-                />
-                <div className="area-selector__item-info">
-                  <span className="area-selector__item-name">{area.nome}</span>
-                  {area.torre && (
-                    <span className="area-selector__item-torre">Torre: {area.torre}</span>
-                  )}
+            {Object.entries(
+              areas.reduce((acc, area) => {
+                const t = area.torre || 'Outras Áreas';
+                if (!acc[t]) acc[t] = [];
+                acc[t].push(area);
+                return acc;
+              }, {} as Record<string, typeof areas>)
+            ).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([torre, list]) => (
+              <div key={torre} className="area-selector__group">
+                <h3 className="area-selector__group-title">🏢 {torre}</h3>
+                <div className="area-selector__group-items">
+                  {list.map((area) => (
+                    <label
+                      key={area.codigo}
+                      className={`area-selector__item ${selected.includes(area.codigo) ? 'area-selector__item--selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="area-selector__checkbox"
+                        checked={selected.includes(area.codigo)}
+                        onChange={() => toggleArea(area.codigo)}
+                        aria-label={`Selecionar aplicação ${area.nome}`}
+                      />
+                      <div className="area-selector__item-info">
+                        <span className="area-selector__item-name">{area.nome}</span>
+                      </div>
+                    </label>
+                  ))}
                 </div>
-              </label>
+              </div>
             ))}
           </div>
         )}

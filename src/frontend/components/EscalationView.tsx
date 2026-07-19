@@ -111,7 +111,18 @@ export function EscalationView(): React.ReactElement {
         </div>
         <div className="esc-view__header-right">
           <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="esc-view__select">
-            {areas.map(a => <option key={a.codigo} value={a.codigo}>{a.nome}</option>)}
+            {Object.entries(
+              areas.reduce((acc, area) => {
+                const t = area.torre || 'Outras Áreas';
+                if (!acc[t]) acc[t] = [];
+                acc[t].push(area);
+                return acc;
+              }, {} as Record<string, AreaOption[]>)
+            ).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([torre, list]) => (
+              <optgroup key={torre} label={`🏢 ${torre}`}>
+                {list.map(a => <option key={a.codigo} value={a.codigo}>{a.nome}</option>)}
+              </optgroup>
+            ))}
           </select>
           <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="esc-view__select">
             {monthNames.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
