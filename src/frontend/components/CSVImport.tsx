@@ -3,7 +3,7 @@ import { useCommandCenterStore } from '../store/command-center-store';
 import './CSVImport.css';
 
 type ImportStatus = 'idle' | 'uploading' | 'success' | 'error';
-type ActiveTab = 'importar' | 'importar-problemas' | 'exportar-escala' | 'exportar-cobertura' | 'exportar-problemas';
+type ActiveTab = 'importar-areas' | 'importar' | 'importar-problemas' | 'exportar-escala' | 'exportar-cobertura' | 'exportar-problemas';
 
 interface ImportResponse {
   success: boolean;
@@ -110,6 +110,42 @@ export function CSVImport(): React.ReactElement {
     if (file && (file.name.endsWith('.csv') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) uploadProblemasFile(file);
     else { setStatus('error'); setErrorMsg('Apenas arquivos .csv, .xlsx ou .xls'); }
   }, [uploadProblemasFile]);
+
+  // Upload Areas
+  const uploadAreasFile = useCallback(async (file: File) => {
+    setStatus('uploading'); setFileName(file.name); setResult(null); setErrorMsg(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const response = await fetch('/api/areas/import', { method: 'POST', headers, body: formData });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setStatus('success'); setResult(data as any);
+        addToast({ type: 'success', title: 'Importação Concluída', message: `Áreas importadas com sucesso!` });
+      } else {
+        const err = data.error || 'Erro ao importar áreas';
+        setStatus('error'); setErrorMsg(err);
+        addToast({ type: 'error', title: 'Falha na Importação', message: err });
+      }
+    } catch {
+      setStatus('error'); setErrorMsg('Erro de conexão');
+      addToast({ type: 'error', title: 'Erro de Conexão', message: 'Não foi possível conectar ao servidor.' });
+    }
+  }, [token, addToast]);
+
+  const handleAreasFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (file) uploadAreasFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [uploadAreasFile]);
+
+  const handleAreasDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.csv'))) uploadAreasFile(file);
+    else { setStatus('error'); setErrorMsg('Apenas arquivos .csv (para Áreas)'); }
+  }, [uploadAreasFile]);
 
   // === EXPORT FUNCTIONS ===
 
@@ -241,8 +277,11 @@ export function CSVImport(): React.ReactElement {
         <button className={`csv-import__tab ${activeTab === 'importar' ? 'csv-import__tab--active' : ''}`} onClick={() => { setActiveTab('importar'); resetState(); }}>
           📥 Importar Escala
         </button>
+        <button className={`csv-import__tab ${activeTab === 'importar-areas' ? 'csv-import__tab--active' : ''}`} onClick={() => { setActiveTab('importar-areas'); resetState(); }}>
+          🏢 Importar Áreas
+        </button>
         <button className={`csv-import__tab ${activeTab === 'importar-problemas' ? 'csv-import__tab--active' : ''}`} onClick={() => { setActiveTab('importar-problemas'); resetState(); }}>
-          📥 Importar Problemas
+          ⚠️ Importar Problemas
         </button>
         <button className={`csv-import__tab ${activeTab === 'exportar-escala' ? 'csv-import__tab--active' : ''}`} onClick={() => setActiveTab('exportar-escala')}>
           📤 Exportar Escala
@@ -261,8 +300,13 @@ export function CSVImport(): React.ReactElement {
           <p className="csv-import__subtitle">Importe o CSV de escalonamento para cadastrar áreas, colaboradores e escalas automaticamente.</p>
 
           <div className="csv-import__actions">
-            <button className="csv-import__template-btn" onClick={() => window.open('/api/escalation/template', '_blank')}>
-              📥 Baixar Template
+            <button className="csv-import__template-btn" onClick={() => {
+              const currentMonth = new Date().toLocaleString('pt-BR', { month: 'long' });
+              const currentYear = new Date().getFullYear();
+              const header = `NOME DA APLICAÇÃO\nTorre: OPERAÇÕES LOJAS\nGrupo: CENTRAL DE COMANDO\n${currentMonth}/${currentYear}\n\nColaborador,Cargo,Contato,Nível,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31\nNome Plantonista,Analista,11999999999,1º Escalão,08:00 às 18:00,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-\n`;
+              downloadCSV(header, 'template_sobreaviso.csv');
+            }}>
+              📥 Baixar Template (Sobreaviso)
             </button>
           </div>
 
@@ -295,6 +339,53 @@ export function CSVImport(): React.ReactElement {
                 {(result.usersUpdated || 0) > 0 && <li>Usuários atualizados (de-para): <strong>{result.usersUpdated}</strong></li>}
                 <li>Períodos criados: <strong>{result.periodosCreated || 0}</strong></li>
                 <li>Escalas criadas: <strong>{result.escalasCreated || 0}</strong></li>
+              </ul>
+            </div>
+          )}
+
+          {status === 'error' && <div className="csv-import__result csv-import__result--error">✗ {errorMsg}</div>}
+          {status !== 'idle' && status !== 'uploading' && (
+            <button className="csv-import__reset-btn" onClick={resetState}>Nova importação</button>
+          )}
+        </div>
+      )}
+
+      {/* IMPORTAR AREAS TAB */}
+      {activeTab === 'importar-areas' && (
+        <div className="csv-import__section">
+          <p className="csv-import__subtitle">Importe o CSV para cadastrar a lista mestre de Áreas, com Torre, Grupo e Líderes.</p>
+
+          <div className="csv-import__actions">
+            <button className="csv-import__template-btn" onClick={() => downloadCSV('Torre,Grupo,Aplicação,Coordenador Nome,Coordenador Contato,Gerente Nome,Gerente Contato\nOperações Lojas,Central de Comando,Monitoramento,Nome,11999999999,Nome,11999999999\n', 'template_areas.csv')}>
+              📥 Baixar Template (Áreas)
+            </button>
+          </div>
+
+          <div
+            className={`csv-import__dropzone ${isDragOver ? 'csv-import__dropzone--drag-over' : ''} ${status === 'uploading' ? 'csv-import__dropzone--uploading' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
+            onDrop={handleAreasDrop}
+            onClick={() => fileInputRef.current?.click()}
+            role="button" tabIndex={0}
+          >
+            <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleAreasFileSelect} />
+            {status === 'uploading' ? (
+              <span>Processando...</span>
+            ) : (
+              <><span className="csv-import__dropzone-icon">🏢</span><span>Arraste o CSV de Áreas aqui ou clique para selecionar</span></>
+            )}
+          </div>
+
+          {fileName && <div className="csv-import__file-name">Arquivo: <strong>{fileName}</strong></div>}
+
+          {status === 'success' && result && (
+            <div className="csv-import__result csv-import__result--success">
+              <span>✓ Importação de Áreas realizada com sucesso!</span>
+              <ul>
+                <li>Áreas novas criadas: <strong>{result.created || 0}</strong></li>
+                <li>Áreas atualizadas: <strong>{result.updated || 0}</strong></li>
+                <li>Total lido: <strong>{result.total || 0}</strong></li>
               </ul>
             </div>
           )}
