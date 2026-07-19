@@ -1,7 +1,7 @@
 .sidebar {
   width: 220px;
   min-height: 100vh;
-  background: rgba(15, 18, 37, 0.85); /* fallback var(--sidebar-bg) ignored to ensure transparency */
+  background: var(--sidebar-bg, #0f1225);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--sidebar-border, #1e2142);
@@ -180,7 +180,7 @@
   align-items: center;
   gap: 1rem;
   border-bottom: 1px solid var(--sidebar-border, #1e2142);
-  background: rgba(13, 17, 41, 0.7);
+  background: var(--nav-bg, #0d1b2a);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   position: sticky;
