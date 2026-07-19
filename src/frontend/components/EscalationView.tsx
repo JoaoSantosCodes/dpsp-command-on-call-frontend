@@ -17,6 +17,7 @@ interface EscalationEntry {
 interface AreaOption {
   codigo: string;
   nome: string;
+  grupo: string | null;
   torre: string | null;
   coordenadorNome: string | null;
   coordenadorContato: string | null;
@@ -28,6 +29,8 @@ export function EscalationView(): React.ReactElement {
   const token = useCommandCenterStore((state) => state.token);
   const [entries, setEntries] = useState<EscalationEntry[]>([]);
   const [areas, setAreas] = useState<AreaOption[]>([]);
+  const [selectedTorre, setSelectedTorre] = useState('');
+  const [selectedGrupo, setSelectedGrupo] = useState('');
   const [selectedArea, setSelectedArea] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -53,10 +56,13 @@ export function EscalationView(): React.ReactElement {
         const data = await res.json();
         const list = data.areas || data || [];
         setAreas(list);
-        if (list.length > 0 && !selectedArea) setSelectedArea(list[0].codigo);
+        if (list.length > 0 && !selectedTorre) {
+          const firstTorre = list[0].torre || 'Outras Torres';
+          setSelectedTorre(firstTorre);
+        }
       }
     } catch {}
-  }, [selectedArea]);
+  }, [selectedTorre]);
 
   const fetchEscalation = useCallback(async () => {
     if (!selectedArea) return;
@@ -73,6 +79,24 @@ export function EscalationView(): React.ReactElement {
 
   useEffect(() => { fetchAreas(); }, [fetchAreas]);
   useEffect(() => { fetchEscalation(); }, [fetchEscalation]);
+
+  useEffect(() => {
+    if (areas.length === 0 || !selectedTorre) return;
+    const gruposDaTorre = Array.from(new Set(
+      areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre).map(a => a.grupo || 'Outras Áreas')
+    ));
+    if (gruposDaTorre.length > 0 && !gruposDaTorre.includes(selectedGrupo)) {
+      setSelectedGrupo(gruposDaTorre[0]);
+    }
+  }, [selectedTorre, areas, selectedGrupo]);
+
+  useEffect(() => {
+    if (areas.length === 0 || !selectedTorre || !selectedGrupo) return;
+    const areasDoGrupo = areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre && (a.grupo || 'Outras Áreas') === selectedGrupo);
+    if (areasDoGrupo.length > 0 && (!selectedArea || !areasDoGrupo.find(a => a.codigo === selectedArea))) {
+      setSelectedArea(areasDoGrupo[0].codigo);
+    }
+  }, [selectedTorre, selectedGrupo, areas, selectedArea]);
 
   const areaInfo = areas.find(a => a.codigo === selectedArea);
   const todayEntry = entries.find(e => e.dia === activeDay);
@@ -110,20 +134,39 @@ export function EscalationView(): React.ReactElement {
           {areaInfo && <span className="esc-view__badge">ATIVA</span>}
         </div>
         <div className="esc-view__header-right">
-          <select value={selectedArea} onChange={(e) => setSelectedArea(e.target.value)} className="esc-view__select">
-            {Object.entries(
-              areas.reduce((acc, area) => {
-                const t = area.torre || 'Outras Áreas';
-                if (!acc[t]) acc[t] = [];
-                acc[t].push(area);
-                return acc;
-              }, {} as Record<string, AreaOption[]>)
-            ).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([torre, list]) => (
-              <optgroup key={torre} label={`🏢 ${torre}`}>
-                {list.map(a => <option key={a.codigo} value={a.codigo}>{a.nome}</option>)}
-              </optgroup>
-            ))}
-          </select>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select 
+              value={selectedTorre} 
+              onChange={(e) => setSelectedTorre(e.target.value)} 
+              className="esc-view__select"
+            >
+              {Array.from(new Set(areas.map(a => a.torre || 'Outras Torres'))).sort().map(torre => (
+                <option key={torre} value={torre}>🏢 {torre}</option>
+              ))}
+            </select>
+
+            <select 
+              value={selectedGrupo} 
+              onChange={(e) => setSelectedGrupo(e.target.value)} 
+              className="esc-view__select"
+              disabled={!selectedTorre}
+            >
+              {Array.from(new Set(areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre).map(a => a.grupo || 'Outras Áreas'))).sort().map(grupo => (
+                <option key={grupo} value={grupo}>📁 {grupo}</option>
+              ))}
+            </select>
+
+            <select 
+              value={selectedArea} 
+              onChange={(e) => setSelectedArea(e.target.value)} 
+              className="esc-view__select"
+              disabled={!selectedGrupo}
+            >
+              {areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre && (a.grupo || 'Outras Áreas') === selectedGrupo).map(a => (
+                <option key={a.codigo} value={a.codigo}>⚙️ {a.nome}</option>
+              ))}
+            </select>
+          </div>
           <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))} className="esc-view__select">
             {monthNames.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>

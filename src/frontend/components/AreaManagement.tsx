@@ -21,8 +21,8 @@ export function AreaManagement(): React.ReactElement {
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [formCodigo, setFormCodigo] = useState('');
-  const [formNome, setFormNome] = useState('');
   const [formTorre, setFormTorre] = useState('');
+  const [formGrupo, setFormGrupo] = useState('');
   const [formCoordenadorNome, setFormCoordenadorNome] = useState('');
   const [formCoordenadorContato, setFormCoordenadorContato] = useState('');
   const [formGerenteNome, setFormGerenteNome] = useState('');
@@ -56,7 +56,7 @@ export function AreaManagement(): React.ReactElement {
 
   const handleNew = useCallback(() => {
     setEditingArea(null);
-    setFormCodigo(''); setFormNome(''); setFormTorre('');
+    setFormCodigo(''); setFormNome(''); setFormTorre(''); setFormGrupo('');
     setFormCoordenadorNome(''); setFormCoordenadorContato('');
     setFormGerenteNome(''); setFormGerenteContato('');
     setShowForm(true); setError(null); setSuccess(null);
@@ -66,6 +66,7 @@ export function AreaManagement(): React.ReactElement {
     setEditingArea(area);
     setFormCodigo(area.codigo); setFormNome(area.nome);
     setFormTorre(area.torre || '');
+    setFormGrupo(area.grupo || '');
     setFormCoordenadorNome(area.coordenadorNome || '');
     setFormCoordenadorContato(area.coordenadorContato || '');
     setFormGerenteNome(area.gerenteNome || '');
@@ -77,6 +78,7 @@ export function AreaManagement(): React.ReactElement {
     setEditingArea(null);
     setFormCodigo(`${area.codigo}-COPIA`); setFormNome(`${area.nome} (Cópia)`);
     setFormTorre(area.torre || '');
+    setFormGrupo(area.grupo || '');
     setFormCoordenadorNome(area.coordenadorNome || '');
     setFormCoordenadorContato(area.coordenadorContato || '');
     setFormGerenteNome(area.gerenteNome || '');
@@ -94,7 +96,7 @@ export function AreaManagement(): React.ReactElement {
 
     setFormLoading(true);
     try {
-      const body = { codigo: formCodigo.trim(), nome: formNome.trim(), torre: formTorre.trim() || null, coordenadorNome: formCoordenadorNome.trim() || null, coordenadorContato: formCoordenadorContato.trim() || null, gerenteNome: formGerenteNome.trim() || null, gerenteContato: formGerenteContato.trim() || null };
+      const body = { codigo: formCodigo.trim(), nome: formNome.trim(), grupo: formGrupo.trim() || null, torre: formTorre.trim() || null, coordenadorNome: formCoordenadorNome.trim() || null, coordenadorContato: formCoordenadorContato.trim() || null, gerenteNome: formGerenteNome.trim() || null, gerenteContato: formGerenteContato.trim() || null };
       let response: Response;
       if (editingArea) { response = await fetch(`/api/areas/${editingArea.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify(body) }); }
       else { response = await fetch('/api/areas', { method: 'POST', headers: authHeaders, body: JSON.stringify(body) }); }
@@ -103,7 +105,7 @@ export function AreaManagement(): React.ReactElement {
       setShowForm(false); setEditingArea(null); await fetchAreas();
     } catch { setError('Erro ao conectar com o servidor.'); }
     finally { setFormLoading(false); }
-  }, [formCodigo, formNome, formTorre, formCoordenadorNome, formCoordenadorContato, formGerenteNome, formGerenteContato, editingArea, authHeaders, fetchAreas]);
+  }, [formCodigo, formNome, formGrupo, formTorre, formCoordenadorNome, formCoordenadorContato, formGerenteNome, formGerenteContato, editingArea, authHeaders, fetchAreas]);
 
   const handleDelete = useCallback(async (area: Area) => {
     if (!confirm(`Deseja deletar a área "${area.nome}"?`)) return;
@@ -118,7 +120,7 @@ export function AreaManagement(): React.ReactElement {
   const filtered = areas.filter(a => {
     if (!search) return true;
     const s = search.toLowerCase();
-    return a.nome.toLowerCase().includes(s) || a.codigo.toLowerCase().includes(s) || (a.torre || '').toLowerCase().includes(s) || (a.coordenadorNome || '').toLowerCase().includes(s);
+    return a.nome.toLowerCase().includes(s) || a.codigo.toLowerCase().includes(s) || (a.torre || '').toLowerCase().includes(s) || (a.grupo || '').toLowerCase().includes(s) || (a.coordenadorNome || '').toLowerCase().includes(s);
   });
 
   return (
@@ -137,9 +139,10 @@ export function AreaManagement(): React.ReactElement {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
-              <th style={thStyle}>Nome</th>
-              <th style={thStyle}>Código</th>
               <th style={thStyle}>Torre</th>
+              <th style={thStyle}>Área (Grupo)</th>
+              <th style={thStyle}>Aplicação</th>
+              <th style={thStyle}>Código</th>
               <th style={thStyle}>Coordenador</th>
               <th style={thStyle}>Contato Coord.</th>
               <th style={thStyle}>Gerente</th>
@@ -165,9 +168,10 @@ export function AreaManagement(): React.ReactElement {
               <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>Nenhuma área cadastrada.</td></tr>
             ) : filtered.map(area => (
               <tr key={area.id} className="table-row-hover" style={{ borderBottom: '1px solid var(--row-border)' }}>
+                <td style={tdStyle}>{area.torre || '—'}</td>
+                <td style={tdStyle}>{area.grupo || '—'}</td>
                 <td style={tdStyle}>{area.nome}</td>
                 <td style={tdStyle}><span style={{ background: 'var(--badge-indigo-bg)', color: 'var(--badge-indigo-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem' }}>{area.codigo}</span></td>
-                <td style={tdStyle}>{area.torre || '—'}</td>
                 <td style={tdStyle}>{area.coordenadorNome || '—'}</td>
                 <td style={tdStyle}>{area.coordenadorContato || '—'}</td>
                 <td style={tdStyle}>{area.gerenteNome || '—'}</td>
@@ -190,8 +194,9 @@ export function AreaManagement(): React.ReactElement {
             <h2 style={{ fontSize: '1.1rem', color: 'var(--page-text)', marginBottom: '1rem' }}>{editingArea ? 'Editar Área' : 'Nova Área'}</h2>
             <form onSubmit={handleSave}>
               <Field label="Código *" value={formCodigo} onChange={setFormCodigo} placeholder="Ex: AREA-001" />
-              <Field label="Nome *" value={formNome} onChange={setFormNome} placeholder="Nome da área" />
-              <Field label="Torre" value={formTorre} onChange={setFormTorre} placeholder="Torre (opcional)" />
+              <Field label="Torre" value={formTorre} onChange={setFormTorre} placeholder="Torre (Nível 1 - opcional)" />
+              <Field label="Área (Grupo)" value={formGrupo} onChange={setFormGrupo} placeholder="Área pai (Nível 2 - opcional)" />
+              <Field label="Aplicação *" value={formNome} onChange={setFormNome} placeholder="Nome da aplicação (Nível 3)" />
 
               <hr style={{ border: 'none', borderTop: '1px solid var(--input-border)', margin: '1rem 0' }} />
               <h3 style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Coordenador</h3>

@@ -162,6 +162,7 @@ export interface Area {
   id: number;
   codigo: string;
   nome: string;
+  grupo: string | null;
   torre: string | null;
   coordenadorNome: string | null;
   coordenadorContato: string | null;

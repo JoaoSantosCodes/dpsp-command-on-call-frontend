@@ -132,31 +132,40 @@ export function AreaSelector(): React.ReactElement {
           <div className="area-selector__list" role="group" aria-label="Áreas disponíveis">
             {Object.entries(
               areas.reduce((acc, area) => {
-                const t = area.torre || 'Outras Áreas';
-                if (!acc[t]) acc[t] = [];
-                acc[t].push(area);
+                const t = area.torre || 'Outras Torres';
+                if (!acc[t]) acc[t] = {};
+                const g = area.grupo || 'Outras Áreas';
+                if (!acc[t][g]) acc[t][g] = [];
+                acc[t][g].push(area);
                 return acc;
-              }, {} as Record<string, typeof areas>)
-            ).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([torre, list]) => (
+              }, {} as Record<string, Record<string, typeof areas>>)
+            ).sort(([a], [b]) => a === 'Outras Torres' ? 1 : b === 'Outras Torres' ? -1 : a.localeCompare(b)).map(([torre, grupos]) => (
               <div key={torre} className="area-selector__group">
                 <h3 className="area-selector__group-title">🏢 {torre}</h3>
-                <div className="area-selector__group-items">
-                  {list.map((area) => (
-                    <label
-                      key={area.codigo}
-                      className={`area-selector__item ${selected.includes(area.codigo) ? 'area-selector__item--selected' : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        className="area-selector__checkbox"
-                        checked={selected.includes(area.codigo)}
-                        onChange={() => toggleArea(area.codigo)}
-                        aria-label={`Selecionar aplicação ${area.nome}`}
-                      />
-                      <div className="area-selector__item-info">
-                        <span className="area-selector__item-name">{area.nome}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '8px' }}>
+                  {Object.entries(grupos).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([grupo, list]) => (
+                    <div key={grupo} className="area-selector__subgroup">
+                      <h4 className="area-selector__subgroup-title" style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--page-text)', fontWeight: 600 }}>📁 {grupo}</h4>
+                      <div className="area-selector__group-items">
+                        {list.map((area) => (
+                          <label
+                            key={area.codigo}
+                            className={`area-selector__item ${selected.includes(area.codigo) ? 'area-selector__item--selected' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="area-selector__checkbox"
+                              checked={selected.includes(area.codigo)}
+                              onChange={() => toggleArea(area.codigo)}
+                              aria-label={`Selecionar aplicação ${area.nome}`}
+                            />
+                            <div className="area-selector__item-info">
+                              <span className="area-selector__item-name">{area.nome}</span>
+                            </div>
+                          </label>
+                        ))}
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
