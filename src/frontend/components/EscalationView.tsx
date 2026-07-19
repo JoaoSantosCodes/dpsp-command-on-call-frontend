@@ -51,13 +51,7 @@ export function EscalationView(): React.ReactElement {
       const res = await fetch('/api/areas/public');
       if (res.ok) {
         const data = await res.json();
-        // Apenas aplicações com time de sobreaviso próprio (não torres nem sub-produtos)
-        const exclude = [
-          'PENDENTE_APROVACAO', 'BALCAO',
-          'ATENDIMENTO_LOJAS', 'TORRE_SOLUCOES_DIGITAIS', 'LOGISTICA_WMS',
-          'TORRE_SOLUCOES_COM_E_MARKETING', 'SOLUCOES_CORPORATIVAS', 'GDB_SAUDE'
-        ];
-        const list = (data.areas || data || []).filter((a: any) => !exclude.includes(a.codigo));
+        const list = data.areas || data || [];
         setAreas(list);
         if (list.length > 0 && !selectedArea) setSelectedArea(list[0].codigo);
       }
