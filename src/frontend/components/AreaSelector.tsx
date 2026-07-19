@@ -65,8 +65,6 @@ export function AreaSelector(): React.ReactElement {
     fetchAreas();
   }, [token, user]);
 
-  }, [token, user]);
-
   useEffect(() => {
     if (areas.length === 0 || !selectedTorre) return;
     const gruposDaTorre = Array.from(new Set(

@@ -21,6 +21,7 @@ export function AreaManagement(): React.ReactElement {
   const [showForm, setShowForm] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [formCodigo, setFormCodigo] = useState('');
+  const [formNome, setFormNome] = useState('');
   const [formTorre, setFormTorre] = useState('');
   const [formGrupo, setFormGrupo] = useState('');
   const [formCoordenadorNome, setFormCoordenadorNome] = useState('');
