@@ -106,7 +106,6 @@ export function MonitorMapping(): React.ReactElement {
       <div className="mapa__header">
         <span className="mapa__header-title">Command Center</span>
         <span className="mapa__header-clock">● {clock}</span>
-        <span className="mapa__header-status"><span className="mapa__header-dot" /> Datadog Conectado</span>
       </div>
 
       <div className="mapa__search">

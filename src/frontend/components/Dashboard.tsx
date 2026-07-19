@@ -249,10 +249,6 @@ function Header({ connectionStatus }: { connectionStatus: ConnectionStatus }): R
     <header className="dashboard-header">
       <h1>Command Center</h1>
       <div className="dashboard-clock">🕐 {clock}</div>
-      <div className="connection-status">
-        <span className={`status-indicator ${connectionStatus}`} />
-        <span>Datadog: {statusLabel[connectionStatus]}</span>
-      </div>
     </header>
   );
 }
