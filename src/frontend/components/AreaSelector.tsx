@@ -19,6 +19,10 @@ export function AreaSelector(): React.ReactElement {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedTorre, setSelectedTorre] = useState('');
+  const [selectedGrupo, setSelectedGrupo] = useState('');
+  const [selectedAplicacao, setSelectedAplicacao] = useState('');
+
   const token = useCommandCenterStore((state) => state.token);
   const user = useCommandCenterStore((state) => state.user);
   const setSelectedAreas = useCommandCenterStore((state) => state.setSelectedAreas);
@@ -44,10 +48,13 @@ export function AreaSelector(): React.ReactElement {
         if (user && user.perfil !== 'Adm' && user.areaCodigo) {
           const filtered = allAreas.filter((a) => a.codigo === user.areaCodigo);
           setAreas(filtered);
-          // Auto-select their area
           setSelected([user.areaCodigo]);
         } else {
           setAreas(allAreas);
+          if (allAreas.length > 0) {
+            const firstTorre = allAreas[0].torre || 'Outras Torres';
+            setSelectedTorre(firstTorre);
+          }
         }
       } catch {
         setError('Erro ao conectar com o servidor.');
@@ -58,6 +65,26 @@ export function AreaSelector(): React.ReactElement {
     fetchAreas();
   }, [token, user]);
 
+  }, [token, user]);
+
+  useEffect(() => {
+    if (areas.length === 0 || !selectedTorre) return;
+    const gruposDaTorre = Array.from(new Set(
+      areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre).map(a => a.grupo || 'Outras Áreas')
+    ));
+    if (gruposDaTorre.length > 0 && !gruposDaTorre.includes(selectedGrupo)) {
+      setSelectedGrupo(gruposDaTorre[0]);
+    }
+  }, [selectedTorre, areas, selectedGrupo]);
+
+  useEffect(() => {
+    if (areas.length === 0 || !selectedTorre || !selectedGrupo) return;
+    const areasDoGrupo = areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre && (a.grupo || 'Outras Áreas') === selectedGrupo);
+    if (areasDoGrupo.length > 0 && (!selectedAplicacao || !areasDoGrupo.find(a => a.codigo === selectedAplicacao))) {
+      setSelectedAplicacao(areasDoGrupo[0].codigo);
+    }
+  }, [selectedTorre, selectedGrupo, areas, selectedAplicacao]);
+
   const toggleArea = useCallback((codigo: string) => {
     setSelected((prev) => {
       if (prev.includes(codigo)) {
@@ -65,6 +92,16 @@ export function AreaSelector(): React.ReactElement {
       }
       return [...prev, codigo];
     });
+  }, []);
+
+  const handleAddAplicacao = useCallback(() => {
+    if (selectedAplicacao && !selected.includes(selectedAplicacao)) {
+      setSelected(prev => [...prev, selectedAplicacao]);
+    }
+  }, [selectedAplicacao, selected]);
+
+  const handleRemoveArea = useCallback((codigo: string) => {
+    setSelected(prev => prev.filter(c => c !== codigo));
   }, []);
 
   const handleConfirm = useCallback(async () => {
@@ -129,47 +166,90 @@ export function AreaSelector(): React.ReactElement {
         )}
 
         {!loading && areas.length > 0 && (
-          <div className="area-selector__list" role="group" aria-label="Áreas disponíveis">
-            {Object.entries(
-              areas.reduce((acc, area) => {
-                const t = area.torre || 'Outras Torres';
-                if (!acc[t]) acc[t] = {};
-                const g = area.grupo || 'Outras Áreas';
-                if (!acc[t][g]) acc[t][g] = [];
-                acc[t][g].push(area);
-                return acc;
-              }, {} as Record<string, Record<string, typeof areas>>)
-            ).sort(([a], [b]) => a === 'Outras Torres' ? 1 : b === 'Outras Torres' ? -1 : a.localeCompare(b)).map(([torre, grupos]) => (
-              <div key={torre} className="area-selector__group">
-                <h3 className="area-selector__group-title">🏢 {torre}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '8px' }}>
-                  {Object.entries(grupos).sort(([a], [b]) => a === 'Outras Áreas' ? 1 : b === 'Outras Áreas' ? -1 : a.localeCompare(b)).map(([grupo, list]) => (
-                    <div key={grupo} className="area-selector__subgroup">
-                      <h4 className="area-selector__subgroup-title" style={{ margin: '0 0 8px', fontSize: '0.85rem', color: 'var(--page-text)', fontWeight: 600 }}>📁 {grupo}</h4>
-                      <div className="area-selector__group-items">
-                        {list.map((area) => (
-                          <label
-                            key={area.codigo}
-                            className={`area-selector__item ${selected.includes(area.codigo) ? 'area-selector__item--selected' : ''}`}
-                          >
-                            <input
-                              type="checkbox"
-                              className="area-selector__checkbox"
-                              checked={selected.includes(area.codigo)}
-                              onChange={() => toggleArea(area.codigo)}
-                              aria-label={`Selecionar aplicação ${area.nome}`}
-                            />
-                            <div className="area-selector__item-info">
-                              <span className="area-selector__item-name">{area.nome}</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+          <div className="area-selector__cascades" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+            {user?.perfil === 'Adm' && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Torre</label>
+                    <select 
+                      value={selectedTorre} 
+                      onChange={(e) => setSelectedTorre(e.target.value)} 
+                      style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--surface-bg)', color: 'var(--page-text)' }}
+                    >
+                      {Array.from(new Set(areas.map(a => a.torre || 'Outras Torres'))).sort().map(torre => (
+                        <option key={torre} value={torre}>🏢 {torre}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Área (Grupo)</label>
+                    <select 
+                      value={selectedGrupo} 
+                      onChange={(e) => setSelectedGrupo(e.target.value)} 
+                      style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--surface-bg)', color: 'var(--page-text)' }}
+                      disabled={!selectedTorre}
+                    >
+                      {Array.from(new Set(areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre).map(a => a.grupo || 'Outras Áreas'))).sort().map(grupo => (
+                        <option key={grupo} value={grupo}>📁 {grupo}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Aplicação</label>
+                    <select 
+                      value={selectedAplicacao} 
+                      onChange={(e) => setSelectedAplicacao(e.target.value)} 
+                      style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--surface-bg)', color: 'var(--page-text)' }}
+                      disabled={!selectedGrupo}
+                    >
+                      {areas.filter(a => (a.torre || 'Outras Torres') === selectedTorre && (a.grupo || 'Outras Áreas') === selectedGrupo).map(a => (
+                        <option key={a.codigo} value={a.codigo}>⚙️ {a.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button 
+                    onClick={handleAddAplicacao}
+                    type="button"
+                    disabled={!selectedAplicacao || selected.includes(selectedAplicacao)}
+                    style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', cursor: 'pointer', height: '36px', fontWeight: 500 }}
+                  >
+                    Adicionar
+                  </button>
                 </div>
+                <hr style={{ border: 'none', borderTop: '1px solid var(--input-border)' }} />
+              </>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--page-text)' }}>Aplicações Selecionadas ({selected.length}):</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {selected.length === 0 && (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--page-text-muted)' }}>Nenhuma aplicação adicionada.</span>
+                )}
+                {selected.map(codigo => {
+                  const area = areas.find(a => a.codigo === codigo);
+                  if (!area) return null;
+                  return (
+                    <div key={codigo} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--badge-indigo-bg)', color: 'var(--badge-indigo-text)', padding: '4px 10px', borderRadius: '16px', fontSize: '0.8rem', fontWeight: 500 }}>
+                      ⚙️ {area.nome}
+                      {user?.perfil === 'Adm' && (
+                        <button 
+                          onClick={() => handleRemoveArea(codigo)}
+                          style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '0', marginLeft: '4px', fontSize: '1rem', lineHeight: 1 }}
+                          aria-label="Remover"
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            </div>
           </div>
         )}
 
