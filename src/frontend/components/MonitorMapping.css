@@ -63,10 +63,11 @@
 /* Bottom bar with areas */
 .mapa__bottom-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  overflow-x: auto;
   flex-shrink: 0;
+  justify-content: center;
 }
 
 .mapa__area-chip {
