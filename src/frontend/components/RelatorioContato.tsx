@@ -94,7 +94,7 @@ export function RelatorioContato(): React.ReactElement {
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px' }}>
+      <div style={{ overflowX: 'auto', border: '1px solid var(--surface-border)', borderRadius: '12px', background: 'var(--surface-bg)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
           <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
