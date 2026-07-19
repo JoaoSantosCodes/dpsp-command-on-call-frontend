@@ -167,8 +167,8 @@ export function AreaSelector(): React.ReactElement {
           <div className="area-selector__cascades" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
             {user?.perfil === 'Adm' && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
                     <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Torre</label>
                     <select 
                       value={selectedTorre} 
@@ -181,7 +181,7 @@ export function AreaSelector(): React.ReactElement {
                     </select>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
                     <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Área (Grupo)</label>
                     <select 
                       value={selectedGrupo} 
@@ -195,7 +195,7 @@ export function AreaSelector(): React.ReactElement {
                     </select>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 140px' }}>
                     <label style={{ fontSize: '0.8rem', color: 'var(--page-text-muted)' }}>Aplicação</label>
                     <select 
                       value={selectedAplicacao} 
@@ -213,7 +213,7 @@ export function AreaSelector(): React.ReactElement {
                     onClick={handleAddAplicacao}
                     type="button"
                     disabled={!selectedAplicacao || selected.includes(selectedAplicacao)}
-                    style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', cursor: 'pointer', height: '36px', fontWeight: 500 }}
+                    style={{ padding: '0.5rem 1rem', borderRadius: '8px', background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', cursor: 'pointer', height: '36px', fontWeight: 500, flex: '0 0 auto', whiteSpace: 'nowrap' }}
                   >
                     Adicionar
                   </button>
