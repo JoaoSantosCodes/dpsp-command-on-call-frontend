@@ -169,6 +169,7 @@
 .app-layout__content {
   margin-left: 220px;
   flex: 1;
+  min-width: 0;
   min-height: 100vh;
   background: var(--page-bg, #0a0e1a);
 }
