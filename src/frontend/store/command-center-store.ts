@@ -14,6 +14,9 @@ const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('
 const storedUser = typeof localStorage !== 'undefined' ? (() => {
   try { const u = localStorage.getItem('user'); return u ? JSON.parse(u) : null; } catch { return null; }
 })() : null;
+const storedSelectedAreas = typeof localStorage !== 'undefined' ? (() => {
+  try { const a = localStorage.getItem('selectedAreas'); return a ? JSON.parse(a) : []; } catch { return []; }
+})() : [];
 
 export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
   monitors: [],
@@ -28,7 +31,7 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
   currentView: (storedToken && storedUser) ? 'monitor-mapping' : 'login',
 
   // Area selection state
-  selectedAreas: [],
+  selectedAreas: storedSelectedAreas,
 
   // UI state
   toasts: [],
@@ -54,15 +57,21 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
     }
-    set({ token, user, isAuthenticated: true, currentView: 'area-selector' });
+    set((state) => ({ 
+      token, 
+      user, 
+      isAuthenticated: true, 
+      currentView: state.selectedAreas.length > 0 ? 'monitor-mapping' : 'area-selector' 
+    }));
   },
 
   logout() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Do not remove selectedAreas so they are remembered for next login
     }
-    set({ token: null, user: null, isAuthenticated: false, currentView: 'login', selectedAreas: [] });
+    set({ token: null, user: null, isAuthenticated: false, currentView: 'login' });
   },
 
   setCurrentView(view: AppView) {
@@ -70,6 +79,9 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
   },
 
   setSelectedAreas(areas: string[]) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('selectedAreas', JSON.stringify(areas));
+    }
     set({ selectedAreas: areas });
   },
 
