@@ -21,6 +21,7 @@ interface ImportResponse {
 
 export function CSVImport(): React.ReactElement {
   const token = useCommandCenterStore((state) => state.token);
+  const addToast = useCommandCenterStore((state) => state.addToast);
   const [activeTab, setActiveTab] = useState<ActiveTab>('importar');
   const [status, setStatus] = useState<ImportStatus>('idle');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -48,10 +49,19 @@ export function CSVImport(): React.ReactElement {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch('/api/escalation/import', { method: 'POST', headers, body: formData });
       const data: ImportResponse = await response.json();
-      if (response.ok && data.success) { setStatus('success'); setResult(data); }
-      else { setStatus('error'); setErrorMsg(data.errors?.join(', ') || 'Erro ao importar'); }
-    } catch { setStatus('error'); setErrorMsg('Erro de conexão'); }
-  }, [token]);
+      if (response.ok && data.success) {
+        setStatus('success'); setResult(data);
+        addToast({ type: 'success', title: 'Importação Concluída', message: `Escala processada com sucesso!` });
+      } else {
+        const err = data.errors?.join(', ') || 'Erro ao importar';
+        setStatus('error'); setErrorMsg(err);
+        addToast({ type: 'error', title: 'Falha na Importação', message: err });
+      }
+    } catch {
+      setStatus('error'); setErrorMsg('Erro de conexão');
+      addToast({ type: 'error', title: 'Erro de Conexão', message: 'Não foi possível conectar ao servidor.' });
+    }
+  }, [token, selectedMes, selectedAno, addToast]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (file) uploadFile(file);
@@ -75,10 +85,19 @@ export function CSVImport(): React.ReactElement {
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const response = await fetch('/api/problemas/import', { method: 'POST', headers, body: formData });
       const data = await response.json();
-      if (response.ok && data.success) { setStatus('success'); setResult(data as any); }
-      else { setStatus('error'); setErrorMsg(data.errors?.join(', ') || data.error || 'Erro ao importar problemas'); }
-    } catch { setStatus('error'); setErrorMsg('Erro de conexão'); }
-  }, [token]);
+      if (response.ok && data.success) {
+        setStatus('success'); setResult(data as any);
+        addToast({ type: 'success', title: 'Importação Concluída', message: `Problemas importados com sucesso!` });
+      } else {
+        const err = data.errors?.join(', ') || data.error || 'Erro ao importar problemas';
+        setStatus('error'); setErrorMsg(err);
+        addToast({ type: 'error', title: 'Falha na Importação', message: err });
+      }
+    } catch {
+      setStatus('error'); setErrorMsg('Erro de conexão');
+      addToast({ type: 'error', title: 'Erro de Conexão', message: 'Não foi possível conectar ao servidor.' });
+    }
+  }, [token, addToast]);
 
   const handleProblemasFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (file) uploadProblemasFile(file);
