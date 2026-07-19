@@ -138,13 +138,24 @@ export function EscalaManagement(): React.ReactElement {
     setShowForm(true); setError(null); setSuccess(null);
   }, []);
 
-  const handleEdit = useCallback((escala: Escala) => {
+  const handleEdit = useCallback(async (escala: Escala) => {
     setEditingEscala(escala);
     setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
     setFormPeriodoCodigo(escala.periodoCodigo); setFormDia('');
     setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
 
-    const periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    let periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    if (!periodo) {
+      try {
+        const res = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(escala.areaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          const perList = data.periodos || data || [];
+          periodo = perList.find((p: any) => p.codigo === escala.periodoCodigo);
+        }
+      } catch {}
+    }
+
     if (periodo) {
       setFormEntradas([{ horario: periodo.horarios, data: periodo.data }]);
     } else {
@@ -152,15 +163,26 @@ export function EscalaManagement(): React.ReactElement {
     }
 
     setShowForm(true); setError(null); setSuccess(null);
-  }, [periodos]);
+  }, [periodos, token]);
 
-  const handleClone = useCallback((escala: Escala) => {
+  const handleClone = useCallback(async (escala: Escala) => {
     setEditingEscala(null);
     setFormAreaCodigo(escala.areaCodigo); setFormUsuarioCodigo(escala.usuarioCodigo);
     setFormPeriodoCodigo(escala.periodoCodigo); setFormDia('');
     setFormMes(String(new Date().getMonth() + 1)); setFormAno(String(new Date().getFullYear()));
 
-    const periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    let periodo = periodos.find(p => p.codigo === escala.periodoCodigo);
+    if (!periodo) {
+      try {
+        const res = await fetch(`/api/periodos?areaCodigo=${encodeURIComponent(escala.areaCodigo)}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          const perList = data.periodos || data || [];
+          periodo = perList.find((p: any) => p.codigo === escala.periodoCodigo);
+        }
+      } catch {}
+    }
+
     if (periodo) {
       setFormEntradas([{ horario: periodo.horarios, data: periodo.data }]);
     } else {
@@ -168,7 +190,7 @@ export function EscalaManagement(): React.ReactElement {
     }
 
     setShowForm(true); setError(null); setSuccess(null);
-  }, [periodos]);
+  }, [periodos, token]);
 
   const handleCancel = useCallback(() => { setShowForm(false); setEditingEscala(null); }, []);
 
@@ -261,7 +283,7 @@ export function EscalaManagement(): React.ReactElement {
     let match = true;
     if (search) {
       const s = search.toLowerCase();
-      match = match && (esc.codigo.toLowerCase().includes(s) || getPlantonistaNome(esc.usuarioCodigo).toLowerCase().includes(s) || getAreaNome(esc.areaCodigo).toLowerCase().includes(s));
+      match = match && (getPlantonistaNome(esc.usuarioCodigo).toLowerCase().includes(s) || getAreaNome(esc.areaCodigo).toLowerCase().includes(s));
     }
     if (filterArea) match = match && esc.areaCodigo === filterArea;
     if (filterPlantonista) match = match && esc.usuarioCodigo === filterPlantonista;
@@ -302,7 +324,7 @@ export function EscalaManagement(): React.ReactElement {
           <option value="">Qualquer Ano</option>
           <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
         </select>
-        <input style={{ flex: 1, minWidth: '200px', background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem' }} placeholder="🔍 Buscar por código..." value={search} onChange={e => setSearch(e.target.value)} />
+        <input style={{ flex: 1, minWidth: '200px', background: 'var(--surface-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem' }} placeholder="🔍 Buscar por plantonista ou área..." value={search} onChange={e => setSearch(e.target.value)} />
         <button onClick={handleNew} style={{ background: 'var(--btn-primary-bg)', border: 'none', color: 'var(--btn-primary-text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500, whiteSpace: 'nowrap' }}>+ Nova Escala</button>
       </div>
 
@@ -310,7 +332,6 @@ export function EscalaManagement(): React.ReactElement {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead style={{ background: 'var(--surface-bg)' }}>
             <tr>
-              <th style={thStyle}>Código</th>
               <th style={thStyle}>Plantonista</th>
               <th style={thStyle}>Área</th>
               <th style={thStyle}>Período</th>
@@ -332,7 +353,6 @@ export function EscalaManagement(): React.ReactElement {
               <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--page-text-dim)' }}>Nenhuma escala cadastrada.</td></tr>
             ) : filtered.map(escala => (
               <tr key={escala.id} className="table-row-hover" style={{ borderBottom: '1px solid var(--row-border)' }}>
-                <td style={tdStyle}><span style={{ background: 'var(--badge-indigo-bg)', color: 'var(--badge-indigo-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem' }}>{escala.codigo}</span></td>
                 <td style={tdStyle}>{getPlantonistaNome(escala.usuarioCodigo)}</td>
                 <td style={tdStyle}>{getAreaNome(escala.areaCodigo)}</td>
                 <td style={tdStyle}>{getPeriodoDisplay(escala.periodoCodigo)}</td>

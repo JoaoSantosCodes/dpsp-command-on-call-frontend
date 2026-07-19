@@ -3,7 +3,7 @@ import { useCommandCenterStore } from '../store/command-center-store';
 import type { Area } from '../../shared/types';
 
 interface UserItem {
-  id: number; codigo: string; areaCodigo: string | null; nome: string;
+  id: number; codigo: string; areaCodigo: string | null; areasExtras?: string[]; nome: string;
   perfil: string; nivelEscalonamento: string | null; cargo: string | null;
   contato: string | null; username: string; ativo: boolean; aprovado: boolean;
 }
@@ -27,7 +27,7 @@ export function UserManagement(): React.ReactElement {
   const [fNivel, setFNivel] = useState('');
   const [fContato, setFContato] = useState('');
   const [fPerfil, setFPerfil] = useState('');
-  const [fArea, setFArea] = useState('');
+  const [fAreas, setFAreas] = useState<string[]>([]);
   const [fAtivo, setFAtivo] = useState(true);
   const [fSenha, setFSenha] = useState(''); // Added for new user creation
   const [saving, setSaving] = useState(false);
@@ -56,17 +56,17 @@ export function UserManagement(): React.ReactElement {
       setEditing(u); setFNome(u.nome); setFUsername(u.username);
       setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || '');
       setFContato(u.contato || ''); setFPerfil(u.perfil);
-      setFArea(u.areaCodigo || ''); setFAtivo(u.ativo); setFSenha('');
+      setFAreas([u.areaCodigo, ...(u.areasExtras || [])].filter(Boolean) as string[]); setFAtivo(u.ativo); setFSenha('');
     } else {
-      setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: null, nome: '', perfil: 'Plantonista', nivelEscalonamento: null, cargo: null, contato: null, username: '', ativo: true, aprovado: true });
-      setFNome(''); setFUsername(''); setFCargo(''); setFNivel(''); setFContato(''); setFPerfil('Plantonista'); setFArea(''); setFAtivo(true); setFSenha('');
+      setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: null, areasExtras: [], nome: '', perfil: 'Plantonista', nivelEscalonamento: null, cargo: null, contato: null, username: '', ativo: true, aprovado: true });
+      setFNome(''); setFUsername(''); setFCargo(''); setFNivel(''); setFContato(''); setFPerfil('Plantonista'); setFAreas([]); setFAtivo(true); setFSenha('');
     }
     setError(null); setSuccess(null);
   };
 
   const openClone = (u: UserItem) => {
-    setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: u.areaCodigo, nome: `${u.nome} (Cópia)`, perfil: u.perfil, nivelEscalonamento: u.nivelEscalonamento, cargo: u.cargo, contato: u.contato, username: `${u.username}_copia`, ativo: u.ativo, aprovado: u.aprovado });
-    setFNome(`${u.nome} (Cópia)`); setFUsername(`${u.username}_copia`); setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || ''); setFContato(u.contato || ''); setFPerfil(u.perfil); setFArea(u.areaCodigo || ''); setFAtivo(u.ativo); setFSenha('');
+    setEditing({ id: 0, codigo: `USR-${Date.now()}`, areaCodigo: u.areaCodigo, areasExtras: u.areasExtras, nome: `${u.nome} (Cópia)`, perfil: u.perfil, nivelEscalonamento: u.nivelEscalonamento, cargo: u.cargo, contato: u.contato, username: `${u.username}_copia`, ativo: u.ativo, aprovado: u.aprovado });
+    setFNome(`${u.nome} (Cópia)`); setFUsername(`${u.username}_copia`); setFCargo(u.cargo || ''); setFNivel(u.nivelEscalonamento || ''); setFContato(u.contato || ''); setFPerfil(u.perfil); setFAreas([u.areaCodigo, ...(u.areasExtras || [])].filter(Boolean) as string[]); setFAtivo(u.ativo); setFSenha('');
     setError(null); setSuccess(null);
   };
 
@@ -75,7 +75,9 @@ export function UserManagement(): React.ReactElement {
     setSaving(true); setError(null);
     try {
       const isNew = editing.id === 0;
-      const body: any = { nome: fNome, username: fUsername, cargo: fCargo || null, nivelEscalonamento: fNivel || null, contato: fContato || null, perfil: fPerfil, areaCodigo: fArea || null, ativo: fAtivo };
+      const areaCodigo = fAreas.length > 0 ? fAreas[0] : null;
+      const areasExtras = fAreas.length > 1 ? fAreas.slice(1) : [];
+      const body: any = { nome: fNome, username: fUsername, cargo: fCargo || null, nivelEscalonamento: fNivel || null, contato: fContato || null, perfil: fPerfil, areaCodigo, areasExtras, ativo: fAtivo };
       
       if (isNew) {
         body.codigo = editing.codigo;
@@ -100,6 +102,13 @@ export function UserManagement(): React.ReactElement {
   });
 
   const getAreaNome = (c: string | null) => c ? (areas.find(a => a.codigo === c)?.nome || c) : '—';
+  
+  const renderAreasCell = (u: UserItem) => {
+    const all = [u.areaCodigo, ...(u.areasExtras || [])].filter(Boolean) as string[];
+    if (all.length === 0) return '—';
+    if (all.length === 1) return getAreaNome(all[0]);
+    return <span title={all.map(getAreaNome).join(', ')}>{getAreaNome(all[0])} (+{all.length - 1})</span>;
+  };
 
   return (
     <div style={{ padding: '1.5rem', maxWidth: '1100px', margin: '0 auto' }}>
@@ -186,7 +195,7 @@ export function UserManagement(): React.ReactElement {
                 <td style={tdStyle}>{u.nivelEscalonamento || '—'}</td>
                 <td style={tdStyle}>{u.cargo || '—'}</td>
                 <td style={tdStyle}>{u.contato || '—'}</td>
-                <td style={tdStyle}>{getAreaNome(u.areaCodigo)}</td>
+                <td style={tdStyle}>{renderAreasCell(u)}</td>
                 <td style={tdStyle}>{u.ativo ? '✅' : '❌'}</td>
                 <td style={tdStyle}>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -228,11 +237,18 @@ export function UserManagement(): React.ReactElement {
                 <option value="Plantonista">Plantonista</option><option value="Responsavel">Responsável</option><option value="Consultor">Consultor</option>{user?.perfil === 'Adm' && <option value="Adm">Adm</option>}
               </select>
             </div>
-            <div style={fieldStyle}><label style={labelStyle}>Área vinculada</label>
-              <select style={inputStyle} value={fArea} onChange={e => setFArea(e.target.value)}>
-                <option value="">Nenhuma</option>
-                {areas.map(a => <option key={a.id} value={a.codigo}>{a.nome}</option>)}
-              </select>
+            <div style={fieldStyle}><label style={labelStyle}>Área(s) vinculada(s)</label>
+              <div style={{ maxHeight: '120px', overflowY: 'auto', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '6px', padding: '0.5rem' }}>
+                {areas.map(a => (
+                  <label key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--input-text)', cursor: 'pointer', marginBottom: '0.3rem' }}>
+                    <input type="checkbox" checked={fAreas.includes(a.codigo)} onChange={(e) => {
+                      if (e.target.checked) setFAreas([...fAreas, a.codigo]);
+                      else setFAreas(fAreas.filter(c => c !== a.codigo));
+                    }} />
+                    {a.nome}
+                  </label>
+                ))}
+              </div>
             </div>
             <div style={{ ...fieldStyle, flexDirection: 'row', alignItems: 'center', gap: '0.75rem' }}>
               <label style={labelStyle}>Ativo</label>

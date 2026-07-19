@@ -1,4 +1,4 @@
-.mapa { display: flex; flex-direction: column; height: 100%; background: var(--mapa-bg); }
+.mapa { display: flex; flex-direction: column; height: 100%; overflow: hidden; background: var(--mapa-bg); }
 
 .mapa__header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.5rem; }
 .mapa__header-title { font-size: 1.1rem; font-weight: 700; color: var(--page-text); }
