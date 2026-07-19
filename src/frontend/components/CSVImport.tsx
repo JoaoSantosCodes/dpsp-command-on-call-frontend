@@ -16,6 +16,7 @@ interface ImportResponse {
   escalasCreated?: number;
   created?: number;
   updated?: number;
+  total?: number;
   errors?: string[];
 }
 
