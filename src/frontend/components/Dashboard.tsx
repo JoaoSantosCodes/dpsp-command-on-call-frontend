@@ -179,7 +179,19 @@ function formatTime(seconds: number) {
 }
 
 function AnalyticsPanel({ data }: { data: AnalyticsData | null }) {
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="analytics-panel">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="analytics-card skeleton-card">
+            <div className="skeleton-title" />
+            <div className="skeleton-value" />
+            <div className="skeleton-desc" />
+          </div>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="analytics-panel">
       <div className="analytics-card">

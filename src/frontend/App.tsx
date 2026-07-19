@@ -22,6 +22,7 @@ import { RegisterUser } from './components/RegisterUser';
 import { AreaSelector } from './components/AreaSelector';
 import { SetupWizard } from './components/SetupWizard';
 import { AuditLogs } from './components/AuditLogs';
+import { ToastContainer } from './components/ToastContainer';
 import './App.css';
 
 import type { AppView } from '../shared/types';
@@ -151,6 +152,7 @@ function AuthenticatedApp({
           {currentView === 'audit-logs' && <AuditLogs />}
         </main>
       </div>
+      <ToastContainer />
     </div>
   );
 }

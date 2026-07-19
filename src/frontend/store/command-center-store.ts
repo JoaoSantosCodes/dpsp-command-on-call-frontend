@@ -30,6 +30,9 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
   // Area selection state
   selectedAreas: [],
 
+  // UI state
+  toasts: [],
+
   setMonitors(monitors: Monitor[]) {
     set({ monitors });
   },
@@ -68,6 +71,15 @@ export const useCommandCenterStore = create<CommandCenterStore>((set) => ({
 
   setSelectedAreas(areas: string[]) {
     set({ selectedAreas: areas });
+  },
+
+  addToast(toast) {
+    const id = Math.random().toString(36).substring(2, 9);
+    set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }));
+  },
+
+  removeToast(id: string) {
+    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
   },
 }));
 

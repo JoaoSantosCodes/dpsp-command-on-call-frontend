@@ -242,6 +242,16 @@ export type AppView =
   | 'audit-logs'
   | 'escalation-view';
 
+// === UI State Types ===
+
+export interface ToastMessage {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  title?: string;
+  message: string;
+  duration?: number;
+}
+
 // === Zustand Store Types ===
 
 export interface CommandCenterStore {
@@ -260,6 +270,9 @@ export interface CommandCenterStore {
   // Area selection state
   selectedAreas: string[];
 
+  // UI state
+  toasts: ToastMessage[];
+
   // Existing actions
   setMonitors(monitors: Monitor[]): void;
   setConnectionStatus(status: ConnectionStatus): void;
@@ -272,4 +285,8 @@ export interface CommandCenterStore {
 
   // Area selection actions
   setSelectedAreas(areas: string[]): void;
+
+  // UI actions
+  addToast(toast: Omit<ToastMessage, 'id'>): void;
+  removeToast(id: string): void;
 }

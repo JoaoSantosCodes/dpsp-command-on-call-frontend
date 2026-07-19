@@ -64,7 +64,7 @@ export function MonitorDetailModal({ monitorId, monitorName, onClose }: Props): 
 
   const handleAcionar = (nome: string, contato: string, area: string) => {
     if (!contato) {
-      alert('Contato não disponível para este plantonista');
+      useCommandCenterStore.getState().addToast({ type: 'warning', message: 'Contato não disponível para este plantonista' });
       return;
     }
     const phone = '55' + contato.replace(/[^0-9]/g, '');

@@ -1,7 +1,9 @@
 .sidebar {
   width: 220px;
   min-height: 100vh;
-  background: var(--sidebar-bg, #0f1225);
+  background: rgba(15, 18, 37, 0.85); /* fallback var(--sidebar-bg) ignored to ensure transparency */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--sidebar-border, #1e2142);
   display: flex;
   flex-direction: column;
@@ -178,7 +180,12 @@
   align-items: center;
   gap: 1rem;
   border-bottom: 1px solid var(--sidebar-border, #1e2142);
-  background: var(--sidebar-bg, #0d1129);
+  background: rgba(13, 17, 41, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .app-layout__status {

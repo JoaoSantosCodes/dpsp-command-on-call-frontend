@@ -276,6 +276,21 @@
   flex: 1;
 }
 
+.app-layout__header {
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--sidebar-border, #1e2142);
+  background: rgba(13, 17, 41, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
 .app__nav-tab {
   display: flex;
   align-items: center;

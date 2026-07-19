@@ -190,7 +190,14 @@ export function EscalationView(): React.ReactElement {
 
       {/* Plantonistas List */}
       {loading ? (
-        <div className="esc-view__loading">Carregando...</div>
+        <div className="esc-view__loading-skeleton">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="skeleton-card" style={{ height: '80px', marginBottom: '8px' }}>
+              <div className="skeleton-title" style={{ width: '40%' }}></div>
+              <div className="skeleton-desc" style={{ width: '20%' }}></div>
+            </div>
+          ))}
+        </div>
       ) : entries.length === 0 ? (
         <div className="esc-view__empty">
           Nenhuma escala de sobreaviso cadastrada para {areaInfo?.nome || 'esta área'} em {monthNames[selectedMonth]}/{selectedYear}.
