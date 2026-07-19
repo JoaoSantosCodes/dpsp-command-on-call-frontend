@@ -45,7 +45,7 @@ export function AuditLogs(): React.ReactElement {
     <div className="audit-logs">
       <div className="audit-logs__header">
         <h2>Histórico de Auditoria</h2>
-        <button onClick={fetchLogs} className="btn-secondary">Atualizar</button>
+        <button onClick={fetchLogs} className="audit-logs__refresh-btn">🔄 Atualizar</button>
       </div>
 
       <div className="audit-logs__content">
