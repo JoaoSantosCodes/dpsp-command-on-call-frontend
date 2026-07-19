@@ -21,6 +21,7 @@ import { Login } from './components/Login';
 import { RegisterUser } from './components/RegisterUser';
 import { AreaSelector } from './components/AreaSelector';
 import { SetupWizard } from './components/SetupWizard';
+import { AuditLogs } from './components/AuditLogs';
 import './App.css';
 
 import type { AppView } from '../shared/types';
@@ -147,6 +148,7 @@ function AuthenticatedApp({
           {currentView === 'problema-management' && <ProblemaManagement />}
           {currentView === 'user-management' && <UserManagement />}
           {currentView === 'relatorio-contato' && <RelatorioContato />}
+          {currentView === 'audit-logs' && <AuditLogs />}
         </main>
       </div>
     </div>

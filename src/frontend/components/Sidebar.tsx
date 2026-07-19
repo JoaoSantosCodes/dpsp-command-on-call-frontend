@@ -19,6 +19,7 @@ const ADMIN_NAV: NavItem[] = [
   { id: 'csv-import', label: 'Importar', icon: '📥' },
   { id: 'problema-management', label: 'Problemas', icon: '⚠️' },
   { id: 'user-management', label: 'Usuários', icon: '👤' },
+  { id: 'audit-logs', label: 'Auditoria', icon: '🛡️' },
   { id: 'relatorio-contato', label: 'Relatórios', icon: '📊' },
 ];
 

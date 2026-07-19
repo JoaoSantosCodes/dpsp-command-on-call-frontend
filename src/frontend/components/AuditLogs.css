@@ -1,0 +1,72 @@
+.audit-logs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--page-bg);
+  color: var(--page-text);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.audit-logs__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.audit-logs__header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.audit-logs__content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--surface-bg);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+}
+
+.audit-logs__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.audit-logs__table th,
+.audit-logs__table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.audit-logs__table th {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: var(--page-text-muted);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.audit-logs__table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.audit-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.audit-tag--create { background-color: rgba(0, 200, 83, 0.15); color: #00e676; }
+.audit-tag--update { background-color: rgba(41, 121, 255, 0.15); color: #448aff; }
+.audit-tag--delete { background-color: rgba(255, 23, 68, 0.15); color: #ff5252; }
+
+.audit-logs__empty, .audit-logs__loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--page-text-dim);
+}
