@@ -27,13 +27,13 @@
   flex-direction: column; 
   align-items: center; 
   gap: 0.5rem;
-  background: rgba(30, 30, 46, 0.4);
+  background: var(--surface-secondary, rgba(30, 30, 46, 0.4));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 .csv-import__dropzone:hover { 
   border-color: var(--btn-edit-text); 
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--nav-tab-active-bg, rgba(99, 102, 241, 0.15));
   transform: translateY(-2px);
 }
 .csv-import__dropzone--drag-over { 
@@ -55,7 +55,7 @@
 .csv-import__reset-btn:hover { background: rgba(255,255,255,0.05); }
 
 .csv-import__export-card { 
-  background: rgba(30, 30, 46, 0.5); 
+  background: var(--surface-secondary, rgba(30, 30, 46, 0.5)); 
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color, #2e2e3e); 

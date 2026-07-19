@@ -68,7 +68,7 @@
 }
 
 .audit-logs__table th {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--surface-secondary, rgba(0, 0, 0, 0.2));
   color: var(--page-text-muted);
   font-weight: 600;
   position: sticky;
@@ -77,7 +77,7 @@
 }
 
 .audit-logs__table tr:hover {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--nav-tab-hover-bg, rgba(255, 255, 255, 0.02));
 }
 
 .audit-tag {
