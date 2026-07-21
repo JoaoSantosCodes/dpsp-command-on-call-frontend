@@ -58,8 +58,9 @@ export function MonitorMapping(): React.ReactElement {
       const allEscalas: EscalaInfo[] = [];
       // Get today's date in Brasilia timezone (YYYY-MM-DD)
       const now = new Date();
-      const brasiliaStr = now.toLocaleString('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' });
-      const today = brasiliaStr.split(',')[0].trim(); // "2026-07-08"
+      const brasiliaStr = now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' });
+      const brasiliaDate = new Date(brasiliaStr);
+      const today = `${brasiliaDate.getFullYear()}-${String(brasiliaDate.getMonth() + 1).padStart(2, '0')}-${String(brasiliaDate.getDate()).padStart(2, '0')}`;
 
       for (const pa of problema.areas) {
         const [escRes, perRes] = await Promise.all([
@@ -131,7 +132,7 @@ export function MonitorMapping(): React.ReactElement {
                 <div key={p.id} className="mapa__card" onClick={() => handleCardClick(p)}>
                   <div className="mapa__card-area">{primaryArea ? primaryArea.nome : '—'}</div>
                   <div className="mapa__card-plantonista">{primaryArea?.coordenadorNome || 'Plantonista'}</div>
-                  <div className="mapa__card-problema">P1 - {p.descricao}</div>
+                  <div className="mapa__card-problema">{p.descricao}</div>
                   {sortedAreas.length > 1 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.2rem' }}>
                       {sortedAreas.slice(1).map((a) => (
@@ -204,25 +205,39 @@ export function MonitorMapping(): React.ReactElement {
                           <span style={{ fontSize: '0.7rem', color: 'var(--page-text-muted)' }}>📅 {e.data}</span>
                           <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', width: '100%', marginTop: '0.3rem' }}>
                             <select
+                              id={`status-${i}-${pa.areaCodigo}`}
                               style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', cursor: 'pointer' }}
                               defaultValue={e.statusContato || 'pendente'}
-                              onChange={async (ev) => {
-                                const status = ev.target.value;
-                                const obsInput = document.getElementById(`obs-${i}-${pa.areaCodigo}`) as HTMLInputElement;
-                                const observacao = obsInput?.value || '';
-                                try {
-                                  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-                                  if (token) headers['Authorization'] = `Bearer ${token}`;
-                                  await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: e.plantonista, areaCodigo: e.areaCodigo, problemaCodigo: selectedProblema?.codigo, data: e.data, status, observacao }) });
-                                  e.statusContato = status;
-                                } catch {}
-                              }}
                             >
                               <option value="pendente">Pendente</option>
                               <option value="atendido">Atendido</option>
                               <option value="nao_atendido">Não Atendido</option>
                             </select>
                             <input id={`obs-${i}-${pa.areaCodigo}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)' }} />
+                            <button
+                              onClick={async () => {
+                                const statusInput = document.getElementById(`status-${i}-${pa.areaCodigo}`) as HTMLSelectElement;
+                                const obsInput = document.getElementById(`obs-${i}-${pa.areaCodigo}`) as HTMLInputElement;
+                                const status = statusInput?.value || 'pendente';
+                                const observacao = obsInput?.value || '';
+                                try {
+                                  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                                  if (token) headers['Authorization'] = `Bearer ${token}`;
+                                  const res = await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: e.plantonista, areaCodigo: e.areaCodigo, problemaCodigo: selectedProblema?.codigo, data: e.data, status, observacao }) });
+                                  if (res.ok) {
+                                    e.statusContato = status;
+                                    alert('Salvo com sucesso!');
+                                  } else {
+                                    alert('Erro ao salvar no servidor.');
+                                  }
+                                } catch {
+                                  alert('Erro ao salvar no servidor.');
+                                }
+                              }}
+                              style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600 }}
+                            >
+                              Salvar
+                            </button>
                           </div>
                         </div>
                       ))}
