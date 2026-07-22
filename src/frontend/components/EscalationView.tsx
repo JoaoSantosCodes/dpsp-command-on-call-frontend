@@ -303,46 +303,42 @@ export function EscalationView(): React.ReactElement {
                       <span className="esc-view__horario">{horario}</span>
                     </td>
                     <td>
-                      {days.includes(activeDay) ? (
-                        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', width: '100%' }}>
-                          <select
-                            id={`status-${idx}-${selectedArea}`}
-                            style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', cursor: 'pointer' }}
-                            defaultValue="pendente"
-                          >
-                            <option value="pendente">Pendente</option>
-                            <option value="atendido">Atendido</option>
-                            <option value="nao_atendido">Não Atendido</option>
-                          </select>
-                          <input id={`obs-${idx}-${selectedArea}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)' }} />
-                          <button
-                            onClick={async () => {
-                              const statusInput = document.getElementById(`status-${idx}-${selectedArea}`) as HTMLSelectElement;
-                              const obsInput = document.getElementById(`obs-${idx}-${selectedArea}`) as HTMLInputElement;
-                              const status = statusInput?.value || 'pendente';
-                              const observacao = obsInput?.value || '';
-                              try {
-                                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-                                if (token) headers['Authorization'] = `Bearer ${token}`;
-                                const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(activeDay).padStart(2, '0')}`;
-                                const res = await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: colab.colaborador, areaCodigo: selectedArea, problemaCodigo: 'GERAL', data: dateStr, status, observacao }) });
-                                if (res.ok) {
-                                  alert('Salvo com sucesso!');
-                                } else {
-                                  alert('Erro ao salvar no servidor.');
-                                }
-                              } catch {
+                      <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', width: '100%' }}>
+                        <select
+                          id={`status-${idx}-${selectedArea}`}
+                          style={{ fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)', cursor: 'pointer' }}
+                          defaultValue="pendente"
+                        >
+                          <option value="pendente">Pendente</option>
+                          <option value="atendido">Atendido</option>
+                          <option value="nao_atendido">Não Atendido</option>
+                        </select>
+                        <input id={`obs-${idx}-${selectedArea}`} type="text" placeholder="Obs..." style={{ flex: 1, fontSize: '0.7rem', padding: '0.2rem 0.4rem', borderRadius: '4px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)' }} />
+                        <button
+                          onClick={async () => {
+                            const statusInput = document.getElementById(`status-${idx}-${selectedArea}`) as HTMLSelectElement;
+                            const obsInput = document.getElementById(`obs-${idx}-${selectedArea}`) as HTMLInputElement;
+                            const status = statusInput?.value || 'pendente';
+                            const observacao = obsInput?.value || '';
+                            try {
+                              const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                              if (token) headers['Authorization'] = `Bearer ${token}`;
+                              const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(activeDay).padStart(2, '0')}`;
+                              const res = await fetch('/api/contato-log', { method: 'POST', headers, body: JSON.stringify({ plantonista: colab.colaborador, areaCodigo: selectedArea, problemaCodigo: 'GERAL', data: dateStr, status, observacao }) });
+                              if (res.ok) {
+                                alert('Salvo com sucesso!');
+                              } else {
                                 alert('Erro ao salvar no servidor.');
                               }
-                            }}
-                            style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600 }}
-                          >
-                            Salvar
-                          </button>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Não escalado hoje</span>
-                      )}
+                            } catch {
+                              alert('Erro ao salvar no servidor.');
+                            }
+                          }}
+                          style={{ background: 'var(--btn-primary-bg)', color: 'var(--btn-primary-text)', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          Salvar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
